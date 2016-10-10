@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Game", "Game", "{6DFF9EDF-B180-432C-B536-B0B025AEAB73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VrRacingGame.CSharp", "VrRacingGame\VrRacingGame.CSharp.csproj", "{DA343A8A-4CB5-9CEA-ED4A-8C857B881040}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{3F935DD3-A866-4117-AD60-E4C1BE7D2ADB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "VrRacingServer\server.csproj", "{1F1F8FE5-AB04-4D10-80E9-3F433D83965C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA343A8A-4CB5-9CEA-ED4A-8C857B881040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA343A8A-4CB5-9CEA-ED4A-8C857B881040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA343A8A-4CB5-9CEA-ED4A-8C857B881040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA343A8A-4CB5-9CEA-ED4A-8C857B881040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F1F8FE5-AB04-4D10-80E9-3F433D83965C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F1F8FE5-AB04-4D10-80E9-3F433D83965C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F1F8FE5-AB04-4D10-80E9-3F433D83965C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F1F8FE5-AB04-4D10-80E9-3F433D83965C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DA343A8A-4CB5-9CEA-ED4A-8C857B881040} = {6DFF9EDF-B180-432C-B536-B0B025AEAB73}
+		{1F1F8FE5-AB04-4D10-80E9-3F433D83965C} = {3F935DD3-A866-4117-AD60-E4C1BE7D2ADB}
+	EndGlobalSection
+EndGlobal
