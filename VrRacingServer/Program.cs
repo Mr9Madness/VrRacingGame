@@ -1,31 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace Server {
 
     class Client {
+        private const int MAXBUFFERSIZE = 256;
         public string Username;
-        public TcpClient Socket = new TcpClient();
+        public TcpClient Socket;
 
-        public Client(string username, string ip, int port) {
-            Username = username;
-
+        public Client(TcpClient socket) {
             try {
-                Console.WriteLine(Username);
-                Socket.Connect(ip, port);
+                Socket = socket;
+                Username = ReceiveMessage().Split('=')[1];
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused")) return;
 
                 Console.WriteLine("\n" + ex + "\n");
             }
+        }
+
+        private string ReceiveMessage() {
+            try {
+                NetworkStream getStream = Socket.GetStream();
+                byte[] buffer = new byte[MAXBUFFERSIZE];
+
+                int readCount = getStream.Read(buffer, 0, buffer.Length);
+                List<byte> actualRead = new List<byte>(buffer).GetRange(0, readCount);
+
+                return Encoding.ASCII.GetString(actualRead.ToArray());
+            } catch (Exception ex) {
+                Console.WriteLine("\"" + ex + "\"");
+            }
+            return null;
         }
     }
 
@@ -41,7 +54,7 @@ namespace Server {
         /// <summary>
         /// The lists of clients, updated realtime.
         /// </summary>
-        private static Dictionary<string, TcpClient> clientList = new Dictionary<string, TcpClient>();
+        public static Dictionary<string, Client> clientList = new Dictionary<string, Client>();
 
         private static string ip = "127.0.0.1";
         private static string serverName = "";
@@ -49,6 +62,8 @@ namespace Server {
         private static bool running = false;
 
         static void Main( string[] args ) {
+            Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
 
@@ -62,13 +77,12 @@ namespace Server {
 
             Console.WriteLine("Server name: " + serverName);
 
-            Client client = new Client("Test", ip, port);
-
-            Console.ReadLine();
+            Thread serverCmd = new Thread(ServerCommands);
+            serverCmd.Start();
         }
 
         /// <summary>
-        /// The startup of the server
+        /// The server uses this to handle new connection requests.
         /// </summary>
         private static void Listen() {
             Listener.Start();
@@ -78,10 +92,17 @@ namespace Server {
 
             while (running) {
                 try {
-                    TcpClient client = Listener.AcceptTcpClient();
-                    clientList.Add("Test", client);
+                    Client client = new Client(Listener.AcceptTcpClient());
 
-                    Console.WriteLine("Client Joined!");
+                    Console.WriteLine("New connection request.");
+                    if (!clientList.ContainsKey(client.Username)) {
+                        clientList.Add(client.Username, client);
+                        Console.WriteLine(client.Username + " joined the server.\n");
+                    } else {
+                        SendMessage(client, "usernameRejected");
+                        Console.WriteLine("Connection request denied, username \"" + client.Username + "\" was already in use.\n");
+                    }
+
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");
 
@@ -91,24 +112,90 @@ namespace Server {
         }
 
         /// <summary>
+        /// Handle server commands while server is active.
+        /// </summary>
+        private static void ServerCommands() {
+            while (true) {
+                List<string> input = new List<string>(new[] { Console.ReadLine() });
+                if (input[0].Contains(" ")) input.AddRange(input[0].Split(' '));
+                else input.Add(input[0]);
+
+                switch (input[1].ToLower()) {
+                    default:
+                        Console.WriteLine("Command \"" + input[1] + "\" does not exist.\n");
+                        break;
+                    case "broadcast":
+                        string broadcastMessage = "";
+
+                        for (int i = 2; i < input.Count; i++) {
+                            string space = "";
+                            if (i != 2) space = " ";
+                            broadcastMessage += space + input[i];
+                        }
+
+                        Broadcast(broadcastMessage);
+                        break;
+                    case "pm":
+                        if (clientList.ContainsKey(input[2])) {
+                            string pmMessage = "";
+
+                            for (int i = 3; i < input.Count; i++) {
+                                string space = "";
+                                if (i != 3)
+                                    space = " ";
+                                pmMessage += space + input[i];
+                            }
+
+                            SendMessage(clientList[input[2]], pmMessage, true);
+                        } else {
+                            Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
+                        }
+                        break;
+                    case "kick":
+                        break;
+                    case "exit": case "quit": case "stop":
+                        //CloseServer();
+                        Console.WriteLine("Server termination requested.");
+                        break;
+                    case "newClient":
+                        Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
         /// Sends an array of bytes to the appointed client.
         /// </summary>
         /// <param name="client">The client to receive the message</param>
         /// <param name="message">The message to be sent to the client</param>
-        private static void SendMessage (TcpClient client, string message) {
-            byte[] buffer = Encoding.ASCII.GetBytes(message);
+        public static void SendMessage(Client client, string message, bool logMessage = false) {
+            try {
+                byte[] buffer = Encoding.ASCII.GetBytes(message);
 
-            NetworkStream sendStream = client.GetStream();
-            sendStream.Write(buffer, 0, buffer.Length);
+                NetworkStream sendStream = client.Socket.GetStream();
+                sendStream.Write(buffer, 0, buffer.Length);
+
+                if (logMessage)
+                    Console.WriteLine("Server > " + client.Username + ": " + message);
+            } catch (Exception ex) {
+                Console.WriteLine("\n" + ex + "\n");
+            }
         }
 
         /// <summary>
         /// Broadcasts a message to all the connected clients.
         /// </summary>
         /// <param name="message">The message to broadcast</param>
-        private static void Broadcast (string message) {
-            foreach (KeyValuePair<string, TcpClient> pair in clientList) {
-                SendMessage(pair.Value, message);
+        public static void Broadcast (string message) {
+            try {
+                foreach (KeyValuePair<string, Client> pair in clientList) {
+                    SendMessage(pair.Value, message);
+                }
+
+                Console.WriteLine("Server > All: " + message);
+            } catch (Exception ex) {
+                Console.WriteLine("\n" + ex + "\n");
             }
         }
 
