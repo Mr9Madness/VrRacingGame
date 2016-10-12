@@ -1,4 +1,0 @@
-# Summary
-
-* Plan van Aanpak
-
