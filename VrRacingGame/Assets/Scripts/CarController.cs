@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets
+namespace Assets.Scripts
 {
     public class CarController : MonoBehaviour
     {
@@ -48,12 +48,9 @@ namespace Assets
 
             //float thrustTorque = _accelValue * ( _currentTorque / 4f );
 
-            Debug.Log( _accelValue );
-            Debug.Log( _brakeValue );
-
             for ( int i = 0; i < 4; i++ )
             {
-                _wheelColliders[ i ].motorTorque = 500 * _accelValue;
+                _wheelColliders[ i ].motorTorque = 1000 * _accelValue;
 
                 if( CurrentSpeed > 5 && Vector3.Angle( transform.forward, _rigidbody.velocity ) < 50f )
                 {
@@ -66,7 +63,7 @@ namespace Assets
                 }
             }
 
-            if( handbrake != 0f )
+            if( handbrake > 0f )
             {
                 float hbTorque = handbrake * float.MaxValue;
 
