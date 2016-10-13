@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2015
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VrRacingGame.CSharp", "VrRacingGame.CSharp.csproj", "{42D0FB97-4270-C4EB-7036-E799392888B3}"
 EndProject
 Global
