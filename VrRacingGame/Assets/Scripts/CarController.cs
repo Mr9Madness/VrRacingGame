@@ -13,6 +13,7 @@ namespace Assets.Scripts
         /// Index to position = 0 Left back, 1 Left front, 2 Right back, 3 Right front
         /// </summary>
         [SerializeField ] private WheelCollider[] _wheelColliders = new WheelCollider[ 4 ];
+
         public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
 
         private Rigidbody _rigidbody;
