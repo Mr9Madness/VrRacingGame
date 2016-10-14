@@ -17,7 +17,6 @@ namespace Assets.Scripts
         public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
 
         private Rigidbody _rigidbody;
-        private float _currentTorque = 0;
         private float _accelValue;
         private float _brakeValue;
         private float _steeringAngle;
@@ -51,6 +50,13 @@ namespace Assets.Scripts
 
             for ( int i = 0; i < 4; i++ )
             {
+                Quaternion rot;
+                Vector3 pos;
+
+                _wheelColliders[ i ].GetWorldPose( out pos, out rot );
+                _wheelMeshes[ i ].transform.position = pos;
+                _wheelMeshes[ i ].transform.rotation = rot * Quaternion.Euler(0, 0, 90 );
+
                 _wheelColliders[ i ].motorTorque = 1000 * _accelValue;
 
                 if( CurrentSpeed > 5 && Vector3.Angle( transform.forward, _rigidbody.velocity ) < 50f )
