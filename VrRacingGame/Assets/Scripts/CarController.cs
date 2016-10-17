@@ -57,7 +57,7 @@ namespace Assets.Scripts
                 _wheelMeshes[ i ].transform.position = pos;
                 _wheelMeshes[ i ].transform.rotation = rot * Quaternion.Euler(0, 0, 90 );
 
-                _wheelColliders[ i ].motorTorque = 1000 * _accelValue;
+                _wheelColliders[ i ].motorTorque = 3000 * _accelValue;
 
                 if( CurrentSpeed > 5 && Vector3.Angle( transform.forward, _rigidbody.velocity ) < 50f )
                 {
@@ -66,7 +66,7 @@ namespace Assets.Scripts
                 else if( _brakeValue > 0 )
                 {
                     _wheelColliders[ i ].brakeTorque = 0f;
-                    _wheelColliders[ i ].motorTorque = -500 * _brakeValue;
+                    _wheelColliders[ i ].motorTorque = -1000 * _brakeValue;
                 }
             }
 
