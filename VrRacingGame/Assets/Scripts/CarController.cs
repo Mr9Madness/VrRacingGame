@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+// ReSharper disable FieldCanBeMadeReadOnly.Local
 
 namespace Assets.Scripts
 {
@@ -14,12 +15,19 @@ namespace Assets.Scripts
         /// </summary>
         [SerializeField ] private WheelCollider[] _wheelColliders = new WheelCollider[ 4 ];
 
+        [ Range( 0, 1 ) ] [ SerializeField ] private float _tractionControl;
+        [ SerializeField ] private float _fullTorqueOverAllWheels;
+
+        private float _slipLimit = 0.3f;
+
         public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
+
 
         private Rigidbody _rigidbody;
         private float _accelValue;
         private float _brakeValue;
         private float _steeringAngle;
+        private float _currentTorque;
 
         void Start()
         {
@@ -46,7 +54,7 @@ namespace Assets.Scripts
             _wheelColliders[ 1 ].steerAngle = _steeringAngle;
             _wheelColliders[ 3 ].steerAngle = _steeringAngle;
 
-            //float thrustTorque = _accelValue * ( _currentTorque / 4f );
+            float thrustTorque = _accelValue * ( _currentTorque / 4f );
 
             for ( int i = 0; i < 4; i++ )
             {
@@ -57,7 +65,7 @@ namespace Assets.Scripts
                 _wheelMeshes[ i ].transform.position = pos;
                 _wheelMeshes[ i ].transform.rotation = rot * Quaternion.Euler(0, 0, 90 );
 
-                _wheelColliders[ i ].motorTorque = 3000 * _accelValue;
+                _wheelColliders[ i ].motorTorque = thrustTorque;
 
                 if( CurrentSpeed > 5 && Vector3.Angle( transform.forward, _rigidbody.velocity ) < 50f )
                 {
@@ -80,6 +88,19 @@ namespace Assets.Scripts
 
             _wheelColliders[ 0 ].attachedRigidbody.AddForce( -transform.up * 100f * _wheelColliders[ 0 ].attachedRigidbody.velocity.magnitude );
 
+            WheelHit wheelHit;
+            for ( int i = 0; i < 4; i++ )
+            {
+                _wheelColliders[ i ].GetGroundHit( out wheelHit );
+                if ( wheelHit.forwardSlip >= _slipLimit && _currentTorque >= 0 )
+                    _currentTorque -= 10 * _tractionControl;
+                else
+                {
+                    _currentTorque += 10 * _tractionControl;
+                    if ( _currentTorque > _fullTorqueOverAllWheels )
+                        _currentTorque = _fullTorqueOverAllWheels;
+                }
+            }
         }
     }
 }

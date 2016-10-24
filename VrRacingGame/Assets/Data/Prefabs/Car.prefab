@@ -293,10 +293,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010717317782}
-  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
   m_LocalPosition: {x: -1.9494864, y: -0.8880366, z: -1.6592762}
   m_LocalScale: {x: 0.43198633, y: 0.27328816, z: 0.4319861}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_Children: []
   m_Father: {fileID: 4000014063202272}
   m_RootOrder: 0
@@ -772,7 +772,7 @@ Animator:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013433923310}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 165806da847d1e7468a6c2aec4b41fb4, type: 3}
+  m_Avatar: {fileID: 9000000, guid: e0f22fc7a9597c64d97df6af1a3901dd, type: 3}
   m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 0
@@ -802,6 +802,8 @@ MonoBehaviour:
   - {fileID: 146000012768696216}
   - {fileID: 146000013951685784}
   - {fileID: 146000012754295814}
+  _tractionControl: 1
+  _fullTorqueOverAllWheels: 2500
 --- !u!124 &124000012883996268
 Behaviour:
   m_ObjectHideFlags: 1
