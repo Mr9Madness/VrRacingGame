@@ -2,7 +2,7 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Assets.Scripts.MainMenu
+namespace MainMenu
 {
     public class MainMenuController : MonoBehaviour
     {

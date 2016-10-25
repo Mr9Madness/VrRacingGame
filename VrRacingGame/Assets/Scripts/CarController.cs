@@ -15,23 +15,38 @@ namespace Assets.Scripts
         /// </summary>
         [SerializeField ] private WheelCollider[] _wheelColliders = new WheelCollider[ 4 ];
 
-        [ Range( 0, 1 ) ] [ SerializeField ] private float _tractionControl;
         [ SerializeField ] private float _fullTorqueOverAllWheels;
-
-        private float _slipLimit = 0.3f;
+        [ SerializeField ] private float _brakeTorque;
 
         public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
 
+        private enum DriveType
+        {
+            FrontWheelDrive,
+            RearWheelDrive,
+            FourWheelDrive
+        }
 
+        private Quaternion[] _wheelMeshLocalRotation;
         private Rigidbody _rigidbody;
+        private float _slipLimit = 0.3f;
+        private float _tractionControl = 1;
         private float _accelValue;
         private float _brakeValue;
         private float _steeringAngle;
         private float _currentTorque;
+        private DriveType _driveType = DriveType.RearWheelDrive;
 
         void Start()
         {
+            _wheelMeshLocalRotation = new Quaternion[ 4 ];
+            for ( int i = 0; i < 4; i++ )
+                _wheelMeshLocalRotation[ i ] = _wheelMeshes[ i ].transform.localRotation;
+            
             _rigidbody = GetComponent< Rigidbody >();
+            _currentTorque = _fullTorqueOverAllWheels - ( _tractionControl * _fullTorqueOverAllWheels );
+
+            LoadSettings();
         }
 
         void FixedUpdate()
@@ -43,7 +58,14 @@ namespace Assets.Scripts
             Move( horizontal, vertical, handbrake );
         }
 
-        void Move( float steeringValue, float accelaration, float handbrake )
+        private void LoadSettings()
+        {
+            _tractionControl = PlayerPrefs.GetFloat( "TractionControll", 1 );
+            _driveType = ( DriveType )PlayerPrefs.GetInt( "DriveType", 1 );
+
+        }
+
+        private void Move( float steeringValue, float accelaration, float handbrake )
         {
             steeringValue = Mathf.Clamp( steeringValue, -1, 1 );
             _accelValue = Mathf.Clamp( accelaration, 0, 1 );
@@ -74,10 +96,11 @@ namespace Assets.Scripts
                 else if( _brakeValue > 0 )
                 {
                     _wheelColliders[ i ].brakeTorque = 0f;
-                    _wheelColliders[ i ].motorTorque = -1000 * _brakeValue;
+                    _wheelColliders[ i ].motorTorque = _brakeTorque * _brakeValue;
                 }
             }
 
+            // Handbrake
             if( handbrake > 0f )
             {
                 float hbTorque = handbrake * float.MaxValue;
@@ -88,9 +111,9 @@ namespace Assets.Scripts
 
             _wheelColliders[ 0 ].attachedRigidbody.AddForce( -transform.up * 100f * _wheelColliders[ 0 ].attachedRigidbody.velocity.magnitude );
 
-            WheelHit wheelHit;
             for ( int i = 0; i < 4; i++ )
             {
+                WheelHit wheelHit;
                 _wheelColliders[ i ].GetGroundHit( out wheelHit );
                 if ( wheelHit.forwardSlip >= _slipLimit && _currentTorque >= 0 )
                     _currentTorque -= 10 * _tractionControl;

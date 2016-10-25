@@ -804,6 +804,7 @@ MonoBehaviour:
   - {fileID: 146000012754295814}
   _tractionControl: 1
   _fullTorqueOverAllWheels: 2500
+  _brakeTorque: 20000
 --- !u!124 &124000012883996268
 Behaviour:
   m_ObjectHideFlags: 1
