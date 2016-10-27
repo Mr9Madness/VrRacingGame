@@ -26,7 +26,7 @@ namespace Client {
                 Socket = new TcpClient();
                 Socket.Connect(Ip, Port);
 
-                SendMessage("username=" + Username);
+                SendMessage(@"Type\2\Command\1\Message\2\username=" + Username);
 
                 Thread ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
@@ -100,8 +100,11 @@ namespace Client {
 
             while (Client.Socket != null) {
                 string input = Console.ReadLine();
+                if (input == "disconnect") CloseConnection();
                 if (input == "exit") Environment.Exit(0);
             }
+
+            Console.WriteLine("Disconnected from server!");
         }
 
         public static void CloseConnection() {
