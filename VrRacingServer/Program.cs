@@ -8,6 +8,8 @@ using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 
+using VrRacingGameDataCollection;
+
 namespace Server {
 
     class Client {
@@ -18,7 +20,22 @@ namespace Server {
         public Client(TcpClient socket) {
             try {
                 Socket = socket;
-                Username = ReceiveMessage().Split('=')[1];
+                ServerPacket username = ReceiveMessage();
+
+                Console.WriteLine(username.ToString());
+                Console.WriteLine(username.Type);
+                Console.WriteLine(username.Message);
+
+                if (username.Type != VrrgDataCollectionType.Command) {
+                    Console.WriteLine("Unexpected message type \"" + username.Type + "\".");
+                    return;
+                }
+                if (!username.Message.Contains("username=")) {
+                    Console.WriteLine("Message \"" + username.Message + "\" does not contain expected \"username=\".");
+                    return;
+                }
+
+                Username = username.Message.Split('=')[1];
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused")) return;
 
@@ -26,7 +43,7 @@ namespace Server {
             }
         }
 
-        private string ReceiveMessage() {
+        private ServerPacket ReceiveMessage () {
             try {
                 NetworkStream getStream = Socket.GetStream();
                 byte[] buffer = new byte[MAXBUFFERSIZE];
@@ -34,7 +51,7 @@ namespace Server {
                 int readCount = getStream.Read(buffer, 0, buffer.Length);
                 List<byte> actualRead = new List<byte>(buffer).GetRange(0, readCount);
 
-                return Encoding.ASCII.GetString(actualRead.ToArray());
+                return new ServerPacket(actualRead);
             } catch (Exception ex) {
                 Console.WriteLine("\"" + ex + "\"");
             }
@@ -62,7 +79,7 @@ namespace Server {
         private static bool running = false;
 
         static void Main( string[] args ) {
-            Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+            Process.Start(@"D:\github\VrRacingGame\Client\bin\Debug\Client.exe");
 
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
@@ -95,8 +112,8 @@ namespace Server {
                     Client client = new Client(Listener.AcceptTcpClient());
 
                     Console.WriteLine("New connection request.");
-                    if (!clientList.ContainsKey(client.Username)) {
-                        clientList.Add(client.Username, client);
+                    if (!clientList.ContainsKey(client.Username.ToLower())) {
+                        clientList.Add(client.Username.ToLower(), client);
                         Console.WriteLine(client.Username + " joined the server.\n");
                     } else {
                         SendMessage(client, "usernameRejected");
@@ -109,6 +126,11 @@ namespace Server {
                     running = false;
                 }
             }
+        }
+
+        private static void CloseServer() {
+            Listener.Stop();
+            Environment.Exit(0);
         }
 
         /// <summary>
@@ -124,7 +146,12 @@ namespace Server {
                     default:
                         Console.WriteLine("Command \"" + input[1] + "\" does not exist.\n");
                         break;
-                    case "broadcast":
+                    case "bc": case "broadcast":
+                        if (input.Count < 3) {
+                            Console.WriteLine("Insufficient parameters given, ex: bc Hello World!");
+                            continue;
+                        }
+
                         string broadcastMessage = "";
 
                         for (int i = 2; i < input.Count; i++) {
@@ -136,7 +163,12 @@ namespace Server {
                         Broadcast(broadcastMessage);
                         break;
                     case "pm":
-                        if (clientList.ContainsKey(input[2])) {
+                        if (input.Count < 3) {
+                            Console.WriteLine("Insufficient parameters given, ex: pm johnny Hello World!");
+                            continue;
+                        } 
+
+                        if (clientList.ContainsKey(input[2].ToLower())) {
                             string pmMessage = "";
 
                             for (int i = 3; i < input.Count; i++) {
@@ -146,19 +178,19 @@ namespace Server {
                                 pmMessage += space + input[i];
                             }
 
-                            SendMessage(clientList[input[2]], pmMessage, true);
+                            SendMessage(clientList[input[2].ToLower()], pmMessage, true);
                         } else {
                             Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
                         }
                         break;
                     case "kick":
                         break;
-                    case "exit": case "quit": case "stop":
-                        //CloseServer();
+                    case "exit": case "quit": case "close": case "stop":
+                        CloseServer();
                         Console.WriteLine("Server termination requested.");
                         break;
-                    case "newClient":
-                        Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+                    case "newclient":
+                        Process.Start(@"D:\github\VrRacingGame\Client\bin\Debug\Client.exe");
                         break;
                 }
             }
