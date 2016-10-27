@@ -1,0 +1,8 @@
+﻿{	
+	"mapWidth": "andereDingen",
+	"mapHeight": "dingen",
+	"map": [
+		[ 0, 1, 0 ],
+		[ 1, 1, 0 ]
+	]
+}

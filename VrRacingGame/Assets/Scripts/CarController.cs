@@ -22,8 +22,8 @@ namespace Assets.Scripts
 
         private enum DriveType
         {
-            FrontWheelDrive,
             RearWheelDrive,
+            FrontWheelDrive,
             FourWheelDrive
         }
 
@@ -76,7 +76,28 @@ namespace Assets.Scripts
             _wheelColliders[ 1 ].steerAngle = _steeringAngle;
             _wheelColliders[ 3 ].steerAngle = _steeringAngle;
 
-            float thrustTorque = _accelValue * ( _currentTorque / 4f );
+            float thrustTorque;
+
+            switch ( _driveType )
+            {
+                case DriveType.FourWheelDrive:
+                    thrustTorque = _accelValue * ( _currentTorque / 4f );
+
+                    for( int i = 0; i < 4; i++ )
+                        _wheelColliders[ i ].motorTorque = thrustTorque;
+                    break;
+
+                case DriveType.FrontWheelDrive:
+                    thrustTorque = _accelValue * ( _currentTorque / 2f );
+                    _wheelColliders[ 1 ].motorTorque = thrustTorque;
+                    _wheelColliders[ 3 ].motorTorque = thrustTorque;
+                    break;
+                case DriveType.RearWheelDrive:
+                    thrustTorque = _accelValue * ( _currentTorque / 2f );
+                    _wheelColliders[ 0 ].motorTorque = thrustTorque;
+                    _wheelColliders[ 2 ].motorTorque = thrustTorque;
+                    break;
+            }
 
             for ( int i = 0; i < 4; i++ )
             {
@@ -87,16 +108,15 @@ namespace Assets.Scripts
                 _wheelMeshes[ i ].transform.position = pos;
                 _wheelMeshes[ i ].transform.rotation = rot * Quaternion.Euler(0, 0, 90 );
 
-                _wheelColliders[ i ].motorTorque = thrustTorque;
 
                 if( CurrentSpeed > 5 && Vector3.Angle( transform.forward, _rigidbody.velocity ) < 50f )
                 {
-                    _wheelColliders[ i ].brakeTorque = 20000 * _brakeValue;
+                    _wheelColliders[ i ].brakeTorque = _brakeTorque * _brakeValue;
                 }
                 else if( _brakeValue > 0 )
                 {
                     _wheelColliders[ i ].brakeTorque = 0f;
-                    _wheelColliders[ i ].motorTorque = _brakeTorque * _brakeValue;
+                    _wheelColliders[ i ].motorTorque = -_brakeTorque * _brakeValue;
                 }
             }
 

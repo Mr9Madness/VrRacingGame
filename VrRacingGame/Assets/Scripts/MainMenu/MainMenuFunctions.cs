@@ -49,6 +49,26 @@ namespace MainMenu
             targetText.text = Math.Round( GetComponent<Scrollbar>().value, 2 ).ToString();
         }
 
+        public void ChangeDriveType( Text targetText )
+        {
+            float scrollbarValue = GetComponent< Scrollbar >().value;
+            if ( scrollbarValue <= .33f )
+            {
+                targetText.text = "Rear Wheel Drive";
+                PlayerPrefs.SetInt("DriveType", 0);
+            }
+            else if ( scrollbarValue >= .66f )
+            {
+                targetText.text = "Front Wheel Drive";
+                PlayerPrefs.SetInt( "DriveType", 2 );
+            }
+            else
+            {
+                targetText.text = "Four Wheel Drive";
+                PlayerPrefs.SetInt( "DriveType", 1 );
+            };
+        }
+
         /// <summary>
         /// Turn off or on V-Sync
         /// </summary>

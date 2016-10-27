@@ -7,15 +7,12 @@ namespace MainMenu
     public class MainMenuController : MonoBehaviour
     {
         public EventSystem EventSystem;
-        public GameObject SelectedObject;
+        private GameObject _lastSelectedObject;
 
         public Dropdown WindowSizeDropdown;
-
-        private bool _buttonSelected;
-
+        
         void Start()
         {
-            EventSystem.SetSelectedGameObject( SelectedObject );
 
             Resolution[] supportedResolutions = Screen.resolutions;
 
@@ -29,21 +26,19 @@ namespace MainMenu
 
         void Update()
         {
-            if( Input.GetAxisRaw( "Vertical" ) != 0f || _buttonSelected == false )
+            if ( EventSystem.currentSelectedGameObject != null )
+                _lastSelectedObject = EventSystem.currentSelectedGameObject;
+
+            if ( Input.GetAxisRaw( "MenuVertical" ) != 0f && EventSystem.currentSelectedGameObject == null )
             {
-                EventSystem.SetSelectedGameObject( SelectedObject );
-                _buttonSelected = true;
+                ChangeButton( _lastSelectedObject );
             }
         }
 
         public void ChangeButton( GameObject button )
         {
             EventSystem.SetSelectedGameObject( button );
-        }
-
-        private void OnDisable()
-        {
-            _buttonSelected = false;
+            _lastSelectedObject = button;
         }
     }
 }

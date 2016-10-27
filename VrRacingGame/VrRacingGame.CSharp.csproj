@@ -72,6 +72,10 @@
     <Compile Include="Assets\Scripts\CarController.cs" />
     <Compile Include="Assets\Scripts\MainMenu\MainMenuController.cs" />
     <Compile Include="Assets\Scripts\MainMenu\MainMenuFunctions.cs" />
+    <Compile Include="Assets\Scripts\TileMap.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Data\Map\map1.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
