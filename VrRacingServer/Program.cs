@@ -79,7 +79,7 @@ namespace Server {
         private static bool running = false;
 
         static void Main( string[] args ) {
-            Process.Start(@"D:\github\VrRacingGame\Client\bin\Debug\Client.exe");
+            Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
 
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
@@ -190,7 +190,7 @@ namespace Server {
                         Console.WriteLine("Server termination requested.");
                         break;
                     case "newclient":
-                        Process.Start(@"D:\github\VrRacingGame\Client\bin\Debug\Client.exe");
+                        Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
                         break;
                 }
             }

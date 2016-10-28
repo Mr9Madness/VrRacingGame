@@ -6,12 +6,14 @@ using System.Text.RegularExpressions;
 namespace VrRacingGameDataCollection {
 
     public enum VrrgDataCollectionType {
-        None = 0,
+        None =              0,
 
-        ChatMessage = 1,
-        ChatCommand = 2,
-        Message = 3,
-        Command = 4
+        Message =           1,
+        Command =           2,
+        ChatMessage =       3,
+        ChatCommand =       4,
+        TransformUpdate =   5,
+        MapData =           6
     }
 
     public static class VrrgParser {
@@ -38,8 +40,8 @@ namespace VrRacingGameDataCollection {
                 case "serverpacket":
                     result = ServerPacket.Parse(data);
                     break;
-                case "clientpacket":
-                    result = ClientPacket.Parse(data);
+                case "transformupdate":
+                    result = TransformUpdate.Parse(data);
                     break;
             }
 
@@ -112,18 +114,25 @@ namespace VrRacingGameDataCollection {
         public ServerPacket (object dataToConvert) { TransferData(VrrgParser.ParseTo<ServerPacket>(dataToConvert)); }
     }
 
-    public class ClientPacket : Packet {
-        public static ClientPacket Parse (string dataToConvert) {
-            ClientPacket sp = new ClientPacket();
+    public class TransformUpdate : Packet {
+        public string Username = "";
+        public float[] Position = new float[3];
+        public float[] Rotation = new float[3];
 
-            if (!dataToConvert.Contains("\\1\\")) throw new Exception("Incorrect string format (\"\\1\\\" separator not found):\n\n" + dataToConvert);
+        public static TransformUpdate Parse(string dataToConvert) {
+            TransformUpdate sp = new TransformUpdate();
+
+            if (!dataToConvert.Contains("\\1\\"))
+                throw new Exception("Incorrect string format (\"\\1\\\" separator not found):\n\n" + dataToConvert);
             string[] data = dataToConvert.Split(new[] { "\\1\\" }, StringSplitOptions.None);
             foreach (string variable in data) {
-                if (!dataToConvert.Contains("\\2\\")) throw new Exception("Incorrect string format (\"\\s2\\\" separator not found):\n\n" + dataToConvert);
+                if (!dataToConvert.Contains("\\2\\"))
+                    throw new Exception("Incorrect string format (\"\\s2\\\" separator not found):\n\n" + dataToConvert);
                 string[] item = variable.Split(new[] { "\\2\\" }, StringSplitOptions.None);
 
                 switch (item[0]) {
-                    default: throw new Exception("\"" + item[0] + "\" is not recognized as a ClientPacket variable.");
+                    default:
+                        throw new Exception("\"" + item[0] + "\" is not recognized as a ServerPacket variable.");
                     case "Type":
                         VrrgDataCollectionType type;
                         if (!Enum.TryParse(item[1], true, out type))
@@ -131,31 +140,28 @@ namespace VrRacingGameDataCollection {
 
                         sp.Type = type;
                         break;
-                    case "Message":
-                        sp.Message = item[1];
-                        break;
                 }
             }
 
             return sp;
         }
 
-        /// <summary>
-        /// Transfer the temporary converted info into the ClientPacket
-        /// </summary>
-        /// <param name="sp">The ClientPacket to transfer</param>
-        private void TransferData (ClientPacket sp) {
-            Type = sp.Type;
-            Message = sp.Message;
+        public override string ToString() {
+            return "Type\\2\\" + Type + "\\1\\Username\\2\\" + Username + "\\1\\";
         }
 
         /// <summary>
-        /// The message that was used to convert into a ClientPacket
+        /// Transfer the temporary converted info into the ServerPacket
         /// </summary>
-        public string Message = "";
+        /// <param name="sp">The ServerPacket to transfer</param>
+        private void TransferData(TransformUpdate sp) {
+            Type = sp.Type;
 
-        public ClientPacket () { }
-        public ClientPacket (string dataToConvert) { TransferData(Parse(dataToConvert)); }
-        public ClientPacket (object dataToConvert) { TransferData(VrrgParser.ParseTo<ClientPacket>(dataToConvert)); }
+
+        }
+
+        public TransformUpdate() { }
+        public TransformUpdate(string dataToConvert) { TransferData(Parse(dataToConvert)); }
+        public TransformUpdate(object dataToConvert) { TransferData(VrrgParser.ParseTo<TransformUpdate>(dataToConvert)); }
     }
 }
