@@ -1,35 +1,32 @@
 ﻿using System;
 using UnityEngine;
-using System.IO;
 
 public class TileMap : MonoBehaviour
 {
-    public static TileMapData TileData;
+    private LevelData _tileData;
+    public GameObject[] Trackparts;
 
-    private string MapName;
+    public string MapName;
+
     void Start()
     {
-        MapName = "map1";
-        string json = File.ReadAllText( @"Assets\Data\Map\" + MapName + ".json" );
+        MapName = "level1";
 
-        TileData = new TileMapData().CreateFromJson( json );
-
-        Debug.Log( TileData.mapHeight );
+        _tileData = LevelData.CreateFromJson( MapName );
+        
+        InitLevel();
     }
 
-    void Update()
-    {}
-}
-
-[ Serializable ]
-public struct TileMapData
-{
-    public string mapWidth;
-    public string mapHeight;
-    public int[ , ] map;
-
-    public TileMapData CreateFromJson( string json )
+    void InitLevel()
     {
-        return JsonUtility.FromJson<TileMapData>( json );
+        for ( int x = 0; x <= _tileData.LevelWidth; x++ )
+        {
+            for ( int y = 0; y <= _tileData.LevelHeight; y++ )
+            {
+                int tileValue = _tileData.GetTile( x, y );
+                Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.identity );
+            }
+        }
     }
+
 }
