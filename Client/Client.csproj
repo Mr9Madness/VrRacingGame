@@ -18,10 +18,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -43,7 +45,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="VrRacingGameDataCollection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\VrRacingGameDataCollection\bin\Debug\VrRacingGameDataCollection.dll</HintPath>
+      <HintPath>..\bin\VrRacingGameDataCollection.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

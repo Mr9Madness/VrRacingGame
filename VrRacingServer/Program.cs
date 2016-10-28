@@ -24,18 +24,18 @@ namespace Server {
 
                 Console.WriteLine(username.ToString());
                 Console.WriteLine(username.Type);
-                Console.WriteLine(username.Message);
+                Console.WriteLine(username.Msg);
 
                 if (username.Type != VrrgDataCollectionType.Command) {
                     Console.WriteLine("Unexpected message type \"" + username.Type + "\".");
                     return;
                 }
-                if (!username.Message.Contains("username=")) {
-                    Console.WriteLine("Message \"" + username.Message + "\" does not contain expected \"username=\".");
+                if (!username.Msg.Contains("username=")) {
+                    Console.WriteLine("Message \"" + username.Msg + "\" does not contain expected \"username=\".");
                     return;
                 }
 
-                Username = username.Message.Split('=')[1];
+                Username = username.Msg.Split('=')[1];
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused")) return;
 
@@ -56,6 +56,10 @@ namespace Server {
                 Console.WriteLine("\"" + ex + "\"");
             }
             return null;
+        }
+
+        public void CloseClient() {
+            while (Socket.Connected) Socket.Close();
         }
     }
 
@@ -79,7 +83,7 @@ namespace Server {
         private static bool running = false;
 
         static void Main( string[] args ) {
-            Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+            Process.Start(@"Client.exe");
 
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
@@ -108,8 +112,10 @@ namespace Server {
             Console.WriteLine("Listening for clients...\n");
 
             while (running) {
+                Client client = null;
+
                 try {
-                    Client client = new Client(Listener.AcceptTcpClient());
+                    client = new Client(Listener.AcceptTcpClient());
 
                     Console.WriteLine("New connection request.");
                     if (!clientList.ContainsKey(client.Username.ToLower())) {
@@ -123,12 +129,20 @@ namespace Server {
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");
 
+                    client?.CloseClient();
+
                     running = false;
                 }
             }
         }
 
         private static void CloseServer() {
+            foreach (KeyValuePair<string, Client> client in clientList) {
+                SendMessage(client.Value, new Message("From\\2\\Server\\1\\To\\2\\" + client.Key + "\\1\\Type\\2\\Command\\1\\Message\\2\\serverclosed").ToString());
+
+                client.Value.CloseClient();
+            }
+
             Listener.Stop();
             Environment.Exit(0);
         }
@@ -190,7 +204,7 @@ namespace Server {
                         Console.WriteLine("Server termination requested.");
                         break;
                     case "newclient":
-                        Process.Start(@"D:\github\VrRacingProject\Client\bin\Debug\Client.exe");
+                        Process.Start(@"Client.exe");
                         break;
                 }
             }

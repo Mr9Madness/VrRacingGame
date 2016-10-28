@@ -6,6 +6,7 @@ using System.Threading;
 
 using System.Net;
 using System.Net.Sockets;
+using VrRacingGameDataCollection;
 
 namespace Client {
 
@@ -17,6 +18,7 @@ namespace Client {
         public static int Port;
 
         public static TcpClient Socket;
+        public static Thread ListenToServer;
 
         public static void Connect(string ip = "127.0.0.1", int port = 25001) {
             Ip = ip;
@@ -28,7 +30,7 @@ namespace Client {
 
                 SendMessage(@"Type\2\Command\1\Message\2\username=" + Username);
 
-                Thread ListenToServer = new Thread(Listen);
+                ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused")) {
@@ -61,9 +63,9 @@ namespace Client {
 
             Console.WriteLine("Connected to server!\nListening for server input...");
             while (Socket.Connected) {
-                string message = ReceiveMessage();
+                Command command = new Command(ReceiveMessage());
                 
-                if (message != "usernameRejected") continue;
+                if (command.Msg != "usernameRejected") continue;
                 Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
                 Program.CloseConnection();
             }
@@ -93,21 +95,45 @@ namespace Client {
         private static int Port = 25001;
 
         static void Main(string[] args) {
-            SetOptions();
-            Console.WriteLine("=================== Virtual Reality Racing Game client ===================\n");
+            while (true) {
+                SetOptions();
 
-            Client.Connect(Ip, Port);
+                char ans;
 
-            while (Client.Socket != null) {
-                string input = Console.ReadLine();
-                if (input == "disconnect") CloseConnection();
-                if (input == "exit") Environment.Exit(0);
+                while (true) {
+                    Console.WriteLine("=================== Virtual Reality Racing Game client ===================\n");
+
+                    Client.Connect(Ip, Port);
+
+                    while (Client.Socket != null) {
+                        string input = Console.ReadLine();
+                        if (input == "disconnect") CloseConnection();
+                        if (input == "exit") Environment.Exit(0);
+                    }
+
+                    Console.WriteLine("Disconnected from server!");
+                    Console.Write("Would you like to try to reconnect? (Y/N): ");
+                    ans = Console.ReadKey().KeyChar;
+
+                    Console.Clear();
+
+                    if (ans == 'y' || ans == 'Y')
+                        continue;
+                    if (ans == 'n' || ans == 'N')
+                        break;
+                }
+                Console.Write("Would you like to try to restart the client? (Y/N): ");
+
+                if (ans == 'y' || ans == 'Y')
+                    continue;
+                if (ans == 'n' || ans == 'N')
+                    break;
             }
-
-            Console.WriteLine("Disconnected from server!");
         }
 
         public static void CloseConnection() {
+            Client.ListenToServer.Abort();
+
             while (Client.Socket != null)
                 Client.Socket.Close();
         }
