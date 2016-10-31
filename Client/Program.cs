@@ -25,7 +25,7 @@ namespace Client {
 
                     Client.Connect(Ip, Port);
 
-                    while (Client.Socket != null) {
+                    while (Client.Socket != null && Client.Socket.Connected) {
                         string input = Console.ReadLine();
                         if (input == "disconnect") CloseConnection();
                         if (input == "exit") Environment.Exit(0);
@@ -80,7 +80,6 @@ namespace Client {
                         if (username.Length < 3) {
                             Console.WriteLine("\nThe username \"" + username + "\" is too short. Press enter to retry.");
                             Console.ReadLine();
-                            continue;
                         } else if (username.Length > 32) {
                             string temp = "";
                             for (int i = 0; i < 32; i++)

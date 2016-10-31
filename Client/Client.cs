@@ -63,9 +63,12 @@ namespace Client {
 
             Console.WriteLine("Connected to server!\nListening for server input...");
             while (Socket.Connected) {
+				string msg = ReceiveMessage();
+
+
                 Command command = new Command(ReceiveMessage());
 
-                if (command.Msg != "usernameRejected")
+                if (command.Cmd != "usernameRejected")
                     continue;
                 Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
                 Program.CloseConnection();

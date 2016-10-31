@@ -26,7 +26,8 @@ namespace Server {
         public static Dictionary<string, Client> clientList = new Dictionary<string, Client>();
 
         private static string ip = "127.0.0.1";
-        private static string serverName = "";
+		private static string serverName = "";
+		private static string password = "";
         private static int port = 25001;
         private static bool running = false;
 
@@ -73,10 +74,13 @@ namespace Server {
 
                 try {
                     client = new Client(Listener.AcceptTcpClient());
-
                     Console.WriteLine("New connection request.");
+
                     if (!clientList.ContainsKey(client.Username.ToLower())) {
                         clientList.Add(client.Username.ToLower(), client);
+
+						SendMessage(client, new Command("Server", client.Username, "requirePassword"));
+
                         Console.WriteLine(client.Username + " joined the server.\n");
                     } else {
                         SendMessage(client, "usernameRejected");
@@ -156,21 +160,27 @@ namespace Server {
                         break;
                     case "list": case "ls":
                         if (clientList.Count == 0) {
-                            Console.WriteLine("0 users connected.");
+                            Console.WriteLine("0 clients connected.");
                             break;
                         }
 
-                        Console.WriteLine(clientList.Count + " user(s) connected:\n");
+                        Console.WriteLine(clientList.Count + " client(s) connected:\n");
 
                         foreach (KeyValuePair<string, Client> client in clientList) {
                             Console.WriteLine(client.Value.Username + " - " + client.Value.Socket.Client.LocalEndPoint);
                         }
                         break;
                     case "kick":
+
+						if (clientList.ContainsKey(input[2].ToLower())) clientList.Remove(input[2]);
+						else Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
+
+						if (clientList.ContainsKey(input[2])) Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
+						else Console.WriteLine("Client \"" + input[2] + "\" was successfully kicked.");
+
                         break;
                     case "exit": case "quit": case "close": case "stop":
                         CloseServer();
-                        Console.WriteLine("Server termination requested.");
                         break;
                     case "newclient":
                         Process.Start(@"Client.exe");
@@ -179,26 +189,80 @@ namespace Server {
             }
         }
 
-        /// <summary>
-        /// Sends an array of bytes to the appointed client.
-        /// </summary>
-        /// <param name="client">The client to receive the message</param>
-        /// <param name="message">The message to be sent to the client</param>
-        public static void SendMessage(Client client, string message, bool logMessage = false) {
-            try {
-                byte[] buffer = Encoding.ASCII.GetBytes(message);
+		/// <summary>
+		/// Sends an array of bytes to the appointed client.
+		/// </summary>
+		/// <param name="client">The client to receive the message</param>
+		/// <param name="message">The message to be sent to the client</param>
+		public static void SendMessage(Client client, string message, bool logMessage = false)
+		{
+			try
+			{
+				byte[] buffer = Encoding.ASCII.GetBytes(message);
 
-                NetworkStream sendStream = client.Socket.GetStream();
-                sendStream.Write(buffer, 0, buffer.Length);
+				NetworkStream sendStream = client.Socket.GetStream();
+				sendStream.Write(buffer, 0, buffer.Length);
 
-                if (logMessage)
-                    Console.WriteLine("Server > " + client.Username + ": " + message);
-            } catch (Exception ex) {
-                Console.WriteLine("\n" + ex + "\n");
+				if (logMessage)
+					Console.WriteLine("Server > " + client.Username + ": " + message);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("\n" + ex + "\n");
 
-                CloseClient(client);
-            }
-        }
+				CloseClient(client);
+			}
+		}
+
+		/// <summary>
+		/// Sends an array of bytes to the appointed client.
+		/// </summary>
+		/// <param name="client">The client to receive the message</param>
+		/// <param name="message">The message to be sent to the client</param>
+		public static void SendMessage(Client client, Message message, bool logMessage = false)
+		{
+			try
+			{
+				byte[] buffer = Encoding.ASCII.GetBytes(message.ToString());
+
+				NetworkStream sendStream = client.Socket.GetStream();
+				sendStream.Write(buffer, 0, buffer.Length);
+
+				if (logMessage)
+					Console.WriteLine("Server > " + client.Username + ": " + message);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("\n" + ex + "\n");
+
+				CloseClient(client);
+			}
+		}
+
+		/// <summary>
+		/// Sends an array of bytes to the appointed client.
+		/// </summary>
+		/// <param name="client">The client to receive the message</param>
+		/// <param name="message">The message to be sent to the client</param>
+		public static void SendMessage(Client client, Command message, bool logMessage = false)
+		{
+			try
+			{
+				byte[] buffer = Encoding.ASCII.GetBytes(message.ToString());
+
+				NetworkStream sendStream = client.Socket.GetStream();
+				sendStream.Write(buffer, 0, buffer.Length);
+
+				if (logMessage)
+					Console.WriteLine("Server > " + client.Username + ": " + message);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("\n" + ex + "\n");
+
+				CloseClient(client);
+			}
+		}
 
         /// <summary>
         /// Broadcasts a message to all the connected clients.
@@ -221,14 +285,14 @@ namespace Server {
         /// Initializer for the server.
         /// </summary>
         private static void SetOptions() {
-            int i = 0;
+			int optionCount = 0;
 
-            while (i < 3) {
+            while (optionCount < 3) {
                 Console.WriteLine("=================== Virtual Reality Racing Game server ===================");
 
-                switch (i) {
+                switch (optionCount) {
                     default:
-                        Console.WriteLine("Option (" + i + ") does not exist");
+                        Console.WriteLine("Option (" + optionCount + ") does not exist");
                         break;
                     case 0: // Set IP address and port
                         Console.Write("IP (press ENTER to bind all available): ");
@@ -253,7 +317,7 @@ namespace Server {
                         } else ip = "0.0.0.0";
 
                         IPAddress garbage;
-                        if (IPAddress.TryParse(ip, out garbage)) i++;
+                        if (IPAddress.TryParse(ip, out garbage)) optionCount++;
                         else {
                             Console.WriteLine("\nInvalid IP Address \"" + ip + "\". Press enter to retry.");
                             Console.ReadLine();
@@ -273,18 +337,40 @@ namespace Server {
                             } catch (Exception ex) {}
                         }
 
-                        i++;
+                        optionCount++;
                         break;
-                    case 2: // Set servername.
-                        Console.Write("Server name: ");
+					case 2: // Set servername.
+						Console.Write("Server name: ");
 
-                        try {
-                            serverName = Console.ReadLine();
+						try
+						{
+							serverName = Console.ReadLine();
 
-                            i++;
-                        } catch (Exception ex) { }
+							if (serverName.Length < 32) optionCount++;
+							else {
+								Console.WriteLine("Server name too long (Max nr of characters is 32). Press enter to retry.");
+								Console.ReadLine();
+							}
+						}
+						catch (Exception ex) { }
 
-                        break;
+						break;
+					case 3: // Set password.
+						Console.Write("Password (Optional, leave blank to keep the server open): ");
+
+						try
+						{
+							password = Console.ReadLine();
+
+							if (password.Length < 32) optionCount++;
+							else {
+								Console.WriteLine("Password too long (Max nr of characters is 32). Press enter to retry.");
+								Console.ReadLine();
+							}
+						}
+						catch (Exception ex) { }
+
+						break;
                 }
 
                 Console.Clear();
