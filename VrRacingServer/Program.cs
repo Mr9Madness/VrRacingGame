@@ -11,58 +11,6 @@ using System.Net.Sockets;
 using VrRacingGameDataCollection;
 
 namespace Server {
-
-    class Client {
-        private const int MAXBUFFERSIZE = 256;
-        public string Username;
-        public TcpClient Socket;
-
-        public Client(TcpClient socket) {
-            try {
-                Socket = socket;
-                ServerPacket username = ReceiveMessage();
-
-                Console.WriteLine(username.ToString());
-                Console.WriteLine(username.Type);
-                Console.WriteLine(username.Msg);
-
-                if (username.Type != VrrgDataCollectionType.Command) {
-                    Console.WriteLine("Unexpected message type \"" + username.Type + "\".");
-                    return;
-                }
-                if (!username.Msg.Contains("username=")) {
-                    Console.WriteLine("Message \"" + username.Msg + "\" does not contain expected \"username=\".");
-                    return;
-                }
-
-                Username = username.Msg.Split('=')[1];
-            } catch (Exception ex) {
-                if (ex.ToString().Contains("actively refused")) return;
-
-                Console.WriteLine("\n" + ex + "\n");
-            }
-        }
-
-        private ServerPacket ReceiveMessage () {
-            try {
-                NetworkStream getStream = Socket.GetStream();
-                byte[] buffer = new byte[MAXBUFFERSIZE];
-
-                int readCount = getStream.Read(buffer, 0, buffer.Length);
-                List<byte> actualRead = new List<byte>(buffer).GetRange(0, readCount);
-
-                return new ServerPacket(actualRead);
-            } catch (Exception ex) {
-                Console.WriteLine("\"" + ex + "\"");
-            }
-            return null;
-        }
-
-        public void CloseClient() {
-            while (Socket.Connected) Socket.Close();
-        }
-    }
-
     class Program {
         /// <summary>
         /// The server itself.
@@ -81,6 +29,15 @@ namespace Server {
         private static string serverName = "";
         private static int port = 25001;
         private static bool running = false;
+
+        public static void CloseClient(Client client) {
+            if (client == null) return;
+
+            while (client.Socket.Connected) client.Socket.Close();
+            clientList.Remove(client.Username);
+
+            Console.WriteLine("CLIENT REMOVED");
+        }
 
         static void Main( string[] args ) {
             Process.Start(@"Client.exe");
@@ -129,7 +86,7 @@ namespace Server {
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");
 
-                    client?.CloseClient();
+                    CloseClient(client);
 
                     running = false;
                 }
@@ -137,10 +94,10 @@ namespace Server {
         }
 
         private static void CloseServer() {
-            foreach (KeyValuePair<string, Client> client in clientList) {
-                SendMessage(client.Value, new Message("From\\2\\Server\\1\\To\\2\\" + client.Key + "\\1\\Type\\2\\Command\\1\\Message\\2\\serverclosed").ToString());
+            foreach (KeyValuePair<string, Client> pair in clientList) {
+                SendMessage(pair.Value, new Message("From\\2\\Server\\1\\To\\2\\" + pair.Key + "\\1\\Type\\2\\Command\\1\\Message\\2\\serverclosed").ToString());
 
-                client.Value.CloseClient();
+                CloseClient(pair.Value);
             }
 
             Listener.Stop();
@@ -180,7 +137,7 @@ namespace Server {
                         if (input.Count < 3) {
                             Console.WriteLine("Insufficient parameters given, ex: pm johnny Hello World!");
                             continue;
-                        } 
+                        }
 
                         if (clientList.ContainsKey(input[2].ToLower())) {
                             string pmMessage = "";
@@ -195,6 +152,18 @@ namespace Server {
                             SendMessage(clientList[input[2].ToLower()], pmMessage, true);
                         } else {
                             Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
+                        }
+                        break;
+                    case "list": case "ls":
+                        if (clientList.Count == 0) {
+                            Console.WriteLine("0 users connected.");
+                            break;
+                        }
+
+                        Console.WriteLine(clientList.Count + " user(s) connected:\n");
+
+                        foreach (KeyValuePair<string, Client> client in clientList) {
+                            Console.WriteLine(client.Value.Username + " - " + client.Value.Socket.Client.LocalEndPoint);
                         }
                         break;
                     case "kick":
@@ -226,6 +195,8 @@ namespace Server {
                     Console.WriteLine("Server > " + client.Username + ": " + message);
             } catch (Exception ex) {
                 Console.WriteLine("\n" + ex + "\n");
+
+                CloseClient(client);
             }
         }
 
@@ -234,14 +205,15 @@ namespace Server {
         /// </summary>
         /// <param name="message">The message to broadcast</param>
         public static void Broadcast (string message) {
-            try {
-                foreach (KeyValuePair<string, Client> pair in clientList) {
+            foreach (KeyValuePair<string, Client> pair in clientList) {
+                try {
                     SendMessage(pair.Value, message);
-                }
+                    Console.WriteLine("Server > All: " + message);
+                } catch (Exception ex) {
+                    Console.WriteLine("\n" + ex + "\n");
 
-                Console.WriteLine("Server > All: " + message);
-            } catch (Exception ex) {
-                Console.WriteLine("\n" + ex + "\n");
+                    CloseClient(pair.Value);
+                }
             }
         }
 
@@ -268,7 +240,9 @@ namespace Server {
                                 string[] temp = result.Split(':');
                                 ip = temp[0];
 
-                                try { port = Convert.ToInt16(temp[1]); } catch (Exception ex) {
+                                try {
+                                    port = Convert.ToInt16(temp[1]);
+                                } catch (Exception ex) {
                                     Console.WriteLine("\nInvalid port \"" + temp[1] + "\". Press enter to retry.");
                                     Console.ReadLine();
 
@@ -287,14 +261,19 @@ namespace Server {
                         break;
                     case 1: // Set max players.
                         Console.Write("Max players (2 - 16): ");
+                        string read = Console.ReadLine();
+                        int maxPlayers = 0;
 
-                        try {
-                            int maxPlayers = Convert.ToInt16(Console.ReadLine());
-                            if (maxPlayers < 0) maxPlayers = 2;
-                            if (maxPlayers > 16) maxPlayers = 16;
+                        if (string.IsNullOrEmpty(read)) maxPlayers = 16;
+                        else {
+                            try {
+                                maxPlayers = Convert.ToInt16(read);
+                                if (maxPlayers < 0) maxPlayers = 2;
+                                if (maxPlayers > 16) maxPlayers = 16;
+                            } catch (Exception ex) {}
+                        }
 
-                            i++;
-                        } catch (Exception ex) { }
+                        i++;
                         break;
                     case 2: // Set servername.
                         Console.Write("Server name: ");
