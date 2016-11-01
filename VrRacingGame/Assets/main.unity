@@ -193,14 +193,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e254a4b7a591904d8f82c1d3651c186, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TileData:
-    LevelWidth: 0
-    LevelHeight: 0
-    LevelName: 
-    Level: 
   Trackparts:
   - {fileID: 1000010231902838, guid: 547ae83f15a73e34db78c0b591c32a41, type: 2}
-  - {fileID: 1000010231902838, guid: 547ae83f15a73e34db78c0b591c32a41, type: 2}
+  - {fileID: 1000011770604130, guid: 0134eb48a01f8124dae4af25d6f6bd9f, type: 2}
+  - {fileID: 1000011770604130, guid: 0134eb48a01f8124dae4af25d6f6bd9f, type: 2}
+  - {fileID: 1000011770604130, guid: 0134eb48a01f8124dae4af25d6f6bd9f, type: 2}
+  - {fileID: 1000011770604130, guid: 0134eb48a01f8124dae4af25d6f6bd9f, type: 2}
+  TrackContainer: {fileID: 0}
+  MapName: level1
 --- !u!1001 &2128652520
 Prefab:
   m_ObjectHideFlags: 0
@@ -214,11 +214,11 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4000011459691270, guid: fc0b8e5efe6fcad48a8867082a1ccae7, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 22
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4000011459691270, guid: fc0b8e5efe6fcad48a8867082a1ccae7, type: 2}
       propertyPath: m_LocalPosition.z
-      value: 34.3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4000011459691270, guid: fc0b8e5efe6fcad48a8867082a1ccae7, type: 2}
       propertyPath: m_LocalRotation.x
