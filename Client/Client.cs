@@ -28,7 +28,14 @@ namespace Client {
                 Socket = new TcpClient();
                 Socket.Connect(Ip, Port);
 
-                SendMessage(@"Type\2\Command\1\Message\2\username=" + Username);
+				SendMessage(
+					new Packet(
+						Username, 
+						"Server", 
+						VrrgDataCollectionType.Command, 
+						new string[] { "username", Username }
+               		)
+	            );
 
                 ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
@@ -40,39 +47,85 @@ namespace Client {
             }
         }
 
-        /// <summary>
-        /// Sends an array of bytes to the appointed client.
-        /// </summary>
-        /// <param name="message">The message to be sent to the client</param>
-        /// <param name="logMessage">If the message should be logged to the console</param>
-        private static void SendMessage(string message, bool logMessage = true) {
-            try {
-                byte[] buffer = Encoding.ASCII.GetBytes(message);
+		/// <summary>
+		/// Sends an array of bytes to the appointed client.
+		/// </summary>
+		/// <param name="packet">The message to be sent to the client</param>
+		/// <param name="logMessage">If the message should be logged to the console</param>
+		private static void SendMessage(Packet packet, bool logMessage = true)
+		{
+			try
+			{
+				byte[] buffer = Encoding.ASCII.GetBytes(packet.ToString());
 
-                NetworkStream sendStream = Socket.GetStream();
-                sendStream.Write(buffer, 0, buffer.Length);
+				NetworkStream sendStream = Socket.GetStream();
+				sendStream.Write(buffer, 0, buffer.Length);
 
-                if (logMessage)
-                    Console.WriteLine(Username + " > Server: " + message);
-            } catch (Exception ex) {
-                Console.WriteLine("\n" + ex + "\n");
-            }
-        }
+				if (logMessage)
+					Console.WriteLine(Username + " > Server: " + packet);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("\n" + ex + "\n");
+			}
+		}
 
         private static void Listen() {
+			try
+			{
+				Packet p = new Packet(ReceiveMessage());
 
-            Console.WriteLine("Connected to server!\nListening for server input...");
-            while (Socket.Connected) {
-				string msg = ReceiveMessage();
+				if (p != null &&
+					p.Type == VrrgDataCollectionType.Command &&
+					p.Variables["usernameAvailable"] != "false")
+				{
+					if (p.Variables.ContainsKey("password") && p.Variables["password"] != "")
+					{
+						Console.Write("Password: ");
+						string pass = Console.ReadLine();
 
+						SendMessage(new Packet(Username, "Server", VrrgDataCollectionType.Command, new string[] { "password", pass }));
+						Packet password = new Packet(ReceiveMessage());
 
-                Command command = new Command(ReceiveMessage());
+						if (password != null &&
+							password.Type == VrrgDataCollectionType.Command &&
+							password.Variables.Count > 0 &&
+							password.Variables["passwordAccepted"] == "true")
 
-                if (command.Cmd != "usernameRejected")
-                    continue;
-                Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
-                Program.CloseConnection();
-            }
+							Console.WriteLine("Connected to server!\nListening for server input...");
+
+						else {
+							Console.WriteLine("The password you used is incorrect.");
+							Program.CloseConnection();
+						}
+					}
+					else Console.WriteLine("Password key not found in packet");
+				}
+				else {
+					Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
+					Program.CloseConnection();
+				}
+
+				while (Socket.Connected)
+				{
+					Packet packet = new Packet(ReceiveMessage());
+
+					Console.WriteLine(packet);
+
+					switch (packet.Type)
+					{
+						default:
+							Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
+							break;
+						case VrrgDataCollectionType.Command:
+							break;
+						case VrrgDataCollectionType.Message:
+							break;
+						case VrrgDataCollectionType.TransformUpdate:
+							break;
+					}
+				}
+			} catch (Exception ex) { Console.WriteLine(ex); }
         }
 
         private static string ReceiveMessage(bool logMessage = true) {

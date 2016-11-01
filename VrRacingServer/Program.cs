@@ -15,21 +15,21 @@ namespace Server {
         /// <summary>
         /// The server itself.
         /// </summary>
-        private static TcpListener Listener;
+        public static TcpListener Listener;
         /// <summary>
         /// The thread used for listening to and handling new client requests.
         /// </summary>
-        private static Thread ListenForClients;
+        public static Thread ListenForClients;
         /// <summary>
         /// The lists of clients, updated realtime.
         /// </summary>
         public static Dictionary<string, Client> clientList = new Dictionary<string, Client>();
 
-        private static string ip = "127.0.0.1";
-		private static string serverName = "";
-		private static string password = "";
-        private static int port = 25001;
-        private static bool running = false;
+        public static string ip = "127.0.0.1";
+		public static string serverName = "";
+		public static string password = "";
+        public static int port = 25001;
+        public static bool running = false;
 
         public static void CloseClient(Client client) {
             if (client == null) return;
@@ -76,17 +76,6 @@ namespace Server {
                     client = new Client(Listener.AcceptTcpClient());
                     Console.WriteLine("New connection request.");
 
-                    if (!clientList.ContainsKey(client.Username.ToLower())) {
-                        clientList.Add(client.Username.ToLower(), client);
-
-						SendMessage(client, new Command("Server", client.Username, "requirePassword"));
-
-                        Console.WriteLine(client.Username + " joined the server.\n");
-                    } else {
-                        SendMessage(client, "usernameRejected");
-                        Console.WriteLine("Connection request denied, username \"" + client.Username + "\" was already in use.\n");
-                    }
-
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");
 
@@ -99,7 +88,15 @@ namespace Server {
 
         private static void CloseServer() {
             foreach (KeyValuePair<string, Client> pair in clientList) {
-                SendMessage(pair.Value, new Message("From\\2\\Server\\1\\To\\2\\" + pair.Key + "\\1\\Type\\2\\Command\\1\\Message\\2\\serverclosed").ToString());
+				SendMessage(
+					pair.Value, 
+					new Packet(
+						"Server", 
+						pair.Key, 
+						VrrgDataCollectionType.Command, 
+						new string[] { "message", "serverClosed" }
+					)
+				);
 
                 CloseClient(pair.Value);
             }
@@ -135,7 +132,14 @@ namespace Server {
                             broadcastMessage += space + input[i];
                         }
 
-                        Broadcast(broadcastMessage);
+						Broadcast(
+							new Packet(
+								"Server", 
+								"ALL", 
+								VrrgDataCollectionType.Message, 
+								new string[] { "broadcastMessage", broadcastMessage }
+							)
+						);
                         break;
                     case "pm":
                         if (input.Count < 3) {
@@ -153,7 +157,15 @@ namespace Server {
                                 pmMessage += space + input[i];
                             }
 
-                            SendMessage(clientList[input[2].ToLower()], pmMessage, true);
+							SendMessage(
+								clientList[input[2].ToLower()], 
+					            new Packet(
+						            "Server", 
+			                        input[2], 
+						            VrrgDataCollectionType.Message,
+						            new string[] { "message", pmMessage }
+								), true
+							);
                         } else {
                             Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
                         }
@@ -192,69 +204,19 @@ namespace Server {
 		/// <summary>
 		/// Sends an array of bytes to the appointed client.
 		/// </summary>
-		/// <param name="client">The client to receive the message</param>
-		/// <param name="message">The message to be sent to the client</param>
-		public static void SendMessage(Client client, string message, bool logMessage = false)
+		/// <param name="client">The client to receive the packet</param>
+		/// <param name="packet">The packet to be sent to the client</param>
+		public static void SendMessage(Client client, Packet packet, bool logMessage = true)
 		{
 			try
 			{
-				byte[] buffer = Encoding.ASCII.GetBytes(message);
+				byte[] buffer = Encoding.ASCII.GetBytes(packet.ToString());
 
 				NetworkStream sendStream = client.Socket.GetStream();
 				sendStream.Write(buffer, 0, buffer.Length);
 
 				if (logMessage)
-					Console.WriteLine("Server > " + client.Username + ": " + message);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("\n" + ex + "\n");
-
-				CloseClient(client);
-			}
-		}
-
-		/// <summary>
-		/// Sends an array of bytes to the appointed client.
-		/// </summary>
-		/// <param name="client">The client to receive the message</param>
-		/// <param name="message">The message to be sent to the client</param>
-		public static void SendMessage(Client client, Message message, bool logMessage = false)
-		{
-			try
-			{
-				byte[] buffer = Encoding.ASCII.GetBytes(message.ToString());
-
-				NetworkStream sendStream = client.Socket.GetStream();
-				sendStream.Write(buffer, 0, buffer.Length);
-
-				if (logMessage)
-					Console.WriteLine("Server > " + client.Username + ": " + message);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("\n" + ex + "\n");
-
-				CloseClient(client);
-			}
-		}
-
-		/// <summary>
-		/// Sends an array of bytes to the appointed client.
-		/// </summary>
-		/// <param name="client">The client to receive the message</param>
-		/// <param name="message">The message to be sent to the client</param>
-		public static void SendMessage(Client client, Command message, bool logMessage = false)
-		{
-			try
-			{
-				byte[] buffer = Encoding.ASCII.GetBytes(message.ToString());
-
-				NetworkStream sendStream = client.Socket.GetStream();
-				sendStream.Write(buffer, 0, buffer.Length);
-
-				if (logMessage)
-					Console.WriteLine("Server > " + client.Username + ": " + message);
+					Console.WriteLine("Server > " + client.Username + ": " + packet);
 			}
 			catch (Exception ex)
 			{
@@ -265,14 +227,14 @@ namespace Server {
 		}
 
         /// <summary>
-        /// Broadcasts a message to all the connected clients.
+        /// Broadcasts a packet to all the connected clients.
         /// </summary>
-        /// <param name="message">The message to broadcast</param>
-        public static void Broadcast (string message) {
+		/// <param name="packet">The packet to broadcast</param>
+        public static void Broadcast (Packet packet) {
             foreach (KeyValuePair<string, Client> pair in clientList) {
                 try {
-                    SendMessage(pair.Value, message);
-                    Console.WriteLine("Server > All: " + message);
+                    SendMessage(pair.Value, packet);
+                    Console.WriteLine("Server > All: " + packet);
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");
 
@@ -287,7 +249,7 @@ namespace Server {
         private static void SetOptions() {
 			int optionCount = 0;
 
-            while (optionCount < 3) {
+            while (optionCount < 4) {
                 Console.WriteLine("=================== Virtual Reality Racing Game server ===================");
 
                 switch (optionCount) {
