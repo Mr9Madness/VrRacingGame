@@ -172,7 +172,7 @@ namespace VrRacingGameDataCollection {
                         sp.Type = type;
                         break;
                     case "Msg":
-                        sp.Msg = item[1];
+                        sp.Cmd = item[1];
                         break;
                 }
             }
@@ -189,13 +189,13 @@ namespace VrRacingGameDataCollection {
                 "From\\2\\" + From + "\\1\\" +
                 "To\\2\\" + To + "\\1\\" +
                 "Type\\2\\" + Type + "\\1\\" +
-                "Msg\\2\\" + Msg;
+                "Msg\\2\\" + Cmd;
         }
 
         /// <summary>
         /// The message that was used to convert into a Command
         /// </summary>
-        public string Msg = "";
+        public string Cmd = "";
 
         /// <summary>
         /// Transfer the temporary converted info into the Command
@@ -205,10 +205,17 @@ namespace VrRacingGameDataCollection {
             From = sp.From;
             To = sp.To;
             Type = sp.Type;
-            Msg = sp.Msg;
+            Cmd = sp.Cmd;
         }
 
         public Command() { }
+		public Command(string from, string to, string cmd)
+		{
+			From = from;
+			To = to;
+			Type = VrrgDataCollectionType.Command;
+			Cmd = cmd;
+		}
         public Command(string dataToConvert) { TransferData(Parse(dataToConvert)); }
         public Command(object dataToConvert) { TransferData(VrrgParser.ParseTo<Command>(dataToConvert)); }
     }
@@ -283,7 +290,13 @@ namespace VrRacingGameDataCollection {
             Msg = sp.Msg;
         }
 
-        public Message() { }
+		public Message() { }
+		public Message(string from, string to, string msg) {
+			From = from;
+			To = to;
+			Type = VrrgDataCollectionType.Message;
+			Msg = msg;
+		}
         public Message(string dataToConvert) { TransferData(Parse(dataToConvert)); }
         public Message(object dataToConvert) { TransferData(VrrgParser.ParseTo<Message>(dataToConvert)); }
     }
