@@ -44,7 +44,7 @@ namespace Server {
 				}
 				else Console.WriteLine("Connection request denied, username \"" + Username + "\" was already in use.\n");
 
-				string[] variables = { "usernameAvailable", isAccepted };
+				string[] variables = { "usernameAvailable", isAccepted, "passwordRequired", "false" };
 				if (Program.password != "" && isAccepted == "true") variables = new [] { "usernameAvailable", isAccepted, "passwordRequired", "true" };
 
 				Program.SendMessage(

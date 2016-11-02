@@ -233,7 +233,7 @@ namespace Server {
         public static void Broadcast (Packet packet) {
             foreach (KeyValuePair<string, Client> pair in clientList) {
                 try {
-                    SendMessage(pair.Value, packet);
+                    SendMessage(pair.Value, packet, false);
                     Console.WriteLine("Server > All: " + packet);
                 } catch (Exception ex) {
                     Console.WriteLine("\n" + ex + "\n");

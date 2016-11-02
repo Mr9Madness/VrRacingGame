@@ -35,7 +35,7 @@ namespace Client {
 						Username, 
 						"Server", 
 						VrrgDataCollectionType.Command, 
-						new string[] { "username", Username }
+						new [] { "username", Username }
                		)
 	            );
 
@@ -81,7 +81,7 @@ namespace Client {
 					p.Type == VrrgDataCollectionType.Command &&
 					p.Variables["usernameAvailable"] != "false")
 				{
-					if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] != "false") {
+					if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] == "true") {
 					    Console.Clear();
 
                         while (true) {
@@ -116,7 +116,7 @@ namespace Client {
 							Console.WriteLine("The password you used is incorrect.");
                         }
                         
-                    }
+                    } else if (p.Variables["passwordRequired"] == "true") Console.WriteLine("Server does not require a password.");
 					else Console.WriteLine("Password key not found in packet");
 				}
 				else {
@@ -128,19 +128,23 @@ namespace Client {
 				{
 					Packet packet = new Packet(ReceiveMessage());
 
-					Console.WriteLine(packet);
-
 					switch (packet.Type)
 					{
-						default:
+					    default:
 							Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
 							break;
+					    case VrrgDataCollectionType.None:
+					        break;
 						case VrrgDataCollectionType.Command:
 							break;
 						case VrrgDataCollectionType.Message:
 							break;
-						case VrrgDataCollectionType.TransformUpdate:
+					    case VrrgDataCollectionType.ChatMessage:
+					        break;
+					    case VrrgDataCollectionType.MapData:
 							break;
+						case VrrgDataCollectionType.TransformUpdate:
+					        break;
 					}
 				}
 			} catch (Exception ex) {

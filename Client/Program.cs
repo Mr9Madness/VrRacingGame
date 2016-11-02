@@ -16,6 +16,8 @@ namespace Client {
 
         static void Main(string[] args) {
             while (true) {
+                Console.Clear();
+
                 SetOptions();
 
                 char ans;
@@ -26,16 +28,15 @@ namespace Client {
                     Client.Connect(Ip, Port);
 
                     while (Client.Socket != null && Client.Socket.Connected) {
-						if (Client.Connected)
-						{
-							string input = Console.ReadLine();
-							if (input == "disconnect") CloseConnection();
-							if (input == "exit") Environment.Exit(0);
-						}
+                        if (!Client.Connected) continue;
+
+                        string input = Console.ReadLine();
+                        if (input == "disconnect") CloseConnection();
+                        if (input == "exit") Environment.Exit(0);
                     }
 
                     Console.WriteLine("Disconnected from server!");
-                    Console.Write("Would you like to try to reconnect? (Y/N): ");
+                    Console.Write("Try to reconnect? (Y/N): ");
                     ans = Console.ReadKey().KeyChar;
 
                     Console.Clear();
@@ -46,6 +47,7 @@ namespace Client {
                         break;
                 }
                 Console.Write("Would you like to try to restart the client? (Y/N): ");
+                ans = Console.ReadKey().KeyChar;
 
                 if (ans == 'y' || ans == 'Y')
                     continue;
@@ -80,7 +82,7 @@ namespace Client {
                         break;
                     case 0: // Set max players.
                         Console.Write("Username (3 - 32 characters): ");
-                        string username = Console.ReadLine();
+                        string username = Console.ReadLine()?.Trim(' ');
 
                         if (username.Length < 3) {
                             Console.WriteLine("\nThe username \"" + username + "\" is too short. Press enter to retry.");
