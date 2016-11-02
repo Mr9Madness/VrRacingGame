@@ -15,7 +15,8 @@ namespace Client {
 
         public static string Username;
         public static string Ip;
-        public static int Port;
+		public static int Port;
+		public static bool Connected;
 
         public static TcpClient Socket;
         public static Thread ListenToServer;
@@ -23,6 +24,7 @@ namespace Client {
         public static void Connect(string ip = "127.0.0.1", int port = 25001) {
             Ip = ip;
             Port = port;
+			Connected = false;
 
             try {
                 Socket = new TcpClient();
@@ -82,19 +84,28 @@ namespace Client {
 					if (p.Variables.ContainsKey("password") && p.Variables["password"] != "")
 					{
 						Console.Write("Password: ");
+
 						string pass = Console.ReadLine();
 
-						SendMessage(new Packet(Username, "Server", VrrgDataCollectionType.Command, new string[] { "password", pass }));
+						SendMessage(
+							new Packet(
+								Username, 
+								"Server", 
+								VrrgDataCollectionType.Command, 
+								new string[] { "password", pass }
+							)
+						);
+
 						Packet password = new Packet(ReceiveMessage());
 
 						if (password != null &&
 							password.Type == VrrgDataCollectionType.Command &&
 							password.Variables.Count > 0 &&
-							password.Variables["passwordAccepted"] == "true")
+						    password.Variables["passwordAccepted"] == "true") {
 
 							Console.WriteLine("Connected to server!\nListening for server input...");
-
-						else {
+							Connected = true;
+						} else {
 							Console.WriteLine("The password you used is incorrect.");
 							Program.CloseConnection();
 						}
@@ -125,7 +136,11 @@ namespace Client {
 							break;
 					}
 				}
-			} catch (Exception ex) { Console.WriteLine(ex); }
+			} catch (Exception ex) {
+				if (ex.ToString().Contains("forcibly closed")) Program.CloseConnection("Disconnected from server: Server closed.");
+				else Console.WriteLine(ex); 
+
+			}
         }
 
         private static string ReceiveMessage(bool logMessage = true) {

@@ -26,9 +26,12 @@ namespace Client {
                     Client.Connect(Ip, Port);
 
                     while (Client.Socket != null && Client.Socket.Connected) {
-                        string input = Console.ReadLine();
-                        if (input == "disconnect") CloseConnection();
-                        if (input == "exit") Environment.Exit(0);
+						if (Client.Connected)
+						{
+							string input = Console.ReadLine();
+							if (input == "disconnect") CloseConnection();
+							if (input == "exit") Environment.Exit(0);
+						}
                     }
 
                     Console.WriteLine("Disconnected from server!");
@@ -51,11 +54,13 @@ namespace Client {
             }
         }
 
-        public static void CloseConnection() {
+        public static void CloseConnection(string message = "") {
             Client.ListenToServer.Abort();
 
             while (Client.Socket != null)
                 Client.Socket.Close();
+
+			if (message.Trim(' ').Length > 0) Console.WriteLine(message);
         }
 
         /// <summary>

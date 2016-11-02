@@ -41,7 +41,7 @@ namespace Server {
         }
 
         static void Main( string[] args ) {
-            Process.Start(@"Client.exe");
+            //Process.Start(@"Client.exe");
 
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
