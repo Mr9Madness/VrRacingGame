@@ -240,6 +240,11 @@ Prefab:
       propertyPath: m_RootOrder
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114000010047125570, guid: fc0b8e5efe6fcad48a8867082a1ccae7,
+        type: 2}
+      propertyPath: _reverseTorque
+      value: 500
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fc0b8e5efe6fcad48a8867082a1ccae7, type: 2}
   m_IsPrefabParent: 0
