@@ -47,15 +47,15 @@ namespace Server {
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
 
             Console.WriteLine("Starting server on " + ip + ":" + port);
+            Console.WriteLine("Server name: " + serverName);
+            Console.WriteLine("Password: " + password);
 
             try {
                 Listener = new TcpListener(IPAddress.Parse(ip), port);
                 ListenForClients = new Thread(Listen);
                 ListenForClients.Start();
             } catch (Exception ex) { Console.WriteLine("\n" + ex + "\n"); }
-
-            Console.WriteLine("Server name: " + serverName);
-
+            
             Thread serverCmd = new Thread(ServerCommands);
             serverCmd.Start();
         }

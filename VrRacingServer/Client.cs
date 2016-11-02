@@ -45,7 +45,7 @@ namespace Server {
 				else Console.WriteLine("Connection request denied, username \"" + Username + "\" was already in use.\n");
 
 				string[] variables = { "usernameAvailable", isAccepted };
-				if (Program.password != "" && isAccepted == "true") variables = new string[] { "usernameAvailable", isAccepted, "password", Program.password };
+				if (Program.password != "" && isAccepted == "true") variables = new [] { "usernameAvailable", isAccepted, "passwordRequired", "true" };
 
 				Program.SendMessage(
 					this,
@@ -57,28 +57,29 @@ namespace Server {
 					)
 				);
 
-				if (isAccepted == "true")
-				{
-					packet = ReceiveMessage();
-					if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("password"))
-					{
-						if (Program.password == packet.Variables["password"]) Console.WriteLine(Username + " joined the server.\n");
-						else isAccepted = "false";
+                if (isAccepted != "true") return;
 
-						Program.SendMessage(
-							this,
-							new Packet(
-								"Server",
-								Username,
-								VrrgDataCollectionType.Command,
-								new string[] { "passwordAccepted", isAccepted }
-							)
-						);
-					}
-					else Console.WriteLine("Received packet does not meet expectations of a password-packet.");
-				}
+                isAccepted = "false";
+                while (isAccepted == "false") {
+                    packet = ReceiveMessage();
 
+                    if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("password")) {
+                        if (Program.password == packet.Variables["password"]) {
+                            Console.WriteLine(Username + " joined the server.\n");
+                            isAccepted = "true";
+                        }
 
+                        Program.SendMessage(
+                            this,
+                            new Packet(
+                                "Server",
+                                Username,
+                                VrrgDataCollectionType.Command,
+                                new [] {"passwordAccepted", isAccepted}
+                                )
+                            );
+                    } else Console.WriteLine("Received packet does not meet expectations of a password-packet.");
+                }
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused"))
                     return;
@@ -104,4 +105,3 @@ namespace Server {
         }
     }
 }
-hoi

@@ -77,39 +77,46 @@ namespace Client {
 			{
 				Packet p = new Packet(ReceiveMessage());
 
-				if (p != null &&
+				if (p != new Packet() &&
 					p.Type == VrrgDataCollectionType.Command &&
 					p.Variables["usernameAvailable"] != "false")
 				{
-					if (p.Variables.ContainsKey("password") && p.Variables["password"] != "")
-					{
-						Console.Write("Password: ");
+					if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] != "false") {
+					    Console.Clear();
 
-						string pass = Console.ReadLine();
+                        while (true) {
+						    Console.Write("Password: ");
 
-						SendMessage(
-							new Packet(
-								Username, 
-								"Server", 
-								VrrgDataCollectionType.Command, 
-								new string[] { "password", pass }
-							)
-						);
+						    string pass = Console.ReadLine();
 
-						Packet password = new Packet(ReceiveMessage());
+						    SendMessage(
+							    new Packet(
+								    Username, 
+								    "Server", 
+								    VrrgDataCollectionType.Command, 
+								    new [] { "password", pass }
+							    )
+						    );
 
-						if (password != null &&
-							password.Type == VrrgDataCollectionType.Command &&
-							password.Variables.Count > 0 &&
-						    password.Variables["passwordAccepted"] == "true") {
+						    Packet password = new Packet(ReceiveMessage());
 
-							Console.WriteLine("Connected to server!\nListening for server input...");
-							Connected = true;
-						} else {
+                            if (password != new Packet() &&
+                                password.Type == VrrgDataCollectionType.Command &&
+                                password.Variables.Count > 0 &&
+                                password.Variables.ContainsKey("passwordAccepted") &&
+                                password.Variables["passwordAccepted"] == "true") {
+
+                                Console.WriteLine("Connected to server!\nListening for server input...");
+                                Connected = true;
+
+                                break;
+                            }
+
+                            Console.Clear();
 							Console.WriteLine("The password you used is incorrect.");
-							Program.CloseConnection();
-						}
-					}
+                        }
+                        
+                    }
 					else Console.WriteLine("Password key not found in packet");
 				}
 				else {
