@@ -31,8 +31,15 @@ namespace Client {
                         if (!Client.Connected) continue;
 
                         string input = Console.ReadLine();
-                        if (input == "disconnect") CloseConnection();
-                        if (input == "exit") Environment.Exit(0);
+                        if (input == "disconnect") {
+                            CloseConnection();
+                            break;
+                        }
+
+                        if (input == "exit") {
+                            CloseConnection();
+                            Environment.Exit(0);
+                        }
                     }
 
                     Console.WriteLine("Disconnected from server!");
@@ -53,10 +60,21 @@ namespace Client {
         }
 
         public static void CloseConnection(string message = "") {
+            Client.SendMessage(
+                new Packet(
+                    Client.Username,
+                    "Server",
+                    VrrgDataCollectionType.Command,
+                    new [] { "disconnectRequest", "true" }
+                )
+            );
+
             Client.ListenToServer.Abort();
 
+            Client.Socket.Client.Disconnect(false);
             while (Client.Socket != null)
                 Client.Socket.Close();
+
 
 			if (message.Trim(' ').Length > 0) Console.WriteLine(message);
         }
@@ -107,7 +125,7 @@ namespace Client {
                                 string[] temp = result.Split(':');
                                 Ip = temp[0];
 
-                                try { Port = Convert.ToInt16(temp[1]); } catch (Exception ex) {
+                                try { Port = Convert.ToInt16(temp[1]); } catch (Exception) {
                                     Console.Clear();
                                     Console.WriteLine("\nInvalid port \"" + temp[1] + "\".");
 

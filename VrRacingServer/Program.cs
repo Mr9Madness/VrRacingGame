@@ -23,13 +23,13 @@ namespace Server {
         /// <summary>
         /// The lists of clients, updated realtime.
         /// </summary>
-        public static Dictionary<string, Client> clientList = new Dictionary<string, Client>();
+        public static Dictionary<string, Client> ClientList = new Dictionary<string, Client>();
 
-        public static string ip = "127.0.0.1";
-		public static string serverName = "";
-		public static string password = "";
-        public static int port = 25001;
-        public static int maxPlayers = 0;
+        public static string Ip = "127.0.0.1";
+		public static string ServerName = "";
+		public static string Password = "";
+        public static int Port = 25001;
+        public static int MaxPlayers = 0;
 
         public static void CloseClient(Client client) {
             if (client == null) return;
@@ -45,10 +45,10 @@ namespace Server {
                 );
 
             while (client.Socket.Connected) client.Socket.Close();
-            clientList.Remove(client.Username);
+            ClientList.Remove(client.Username);
 
-            if (clientList.ContainsKey(client.Username.ToLower()))
-                clientList.Remove(client.Username.ToLower());
+            if (ClientList.ContainsKey(client.Username.ToLower()))
+                ClientList.Remove(client.Username.ToLower());
 
             Console.WriteLine(client.Username + " has left the server.");
             client = null;
@@ -60,12 +60,12 @@ namespace Server {
             SetOptions();
             Console.WriteLine("=================== Virtual Reality Racing Game server ===================\n");
 
-            Console.WriteLine("Starting server on " + ip + ":" + port);
-            Console.WriteLine("Server name: " + serverName);
-            Console.WriteLine("Password: " + password);
+            Console.WriteLine("Starting server on " + Ip + ":" + Port);
+            Console.WriteLine("Server name: " + ServerName);
+            Console.WriteLine("Password: " + Password);
 
             try {
-                Listener = new TcpListener(IPAddress.Parse(ip), port);
+                Listener = new TcpListener(IPAddress.Parse(Ip), Port);
 
                 ListenForClients = new Thread(Listen);
                 ListenForClients.Start();
@@ -104,7 +104,7 @@ namespace Server {
         }
 
         private static void CloseServer() {
-            foreach (KeyValuePair<string, Client> pair in clientList) {
+            foreach (KeyValuePair<string, Client> pair in ClientList) {
 				SendMessage(
 					pair.Value, 
 					new Packet(
@@ -164,7 +164,7 @@ namespace Server {
                             continue;
                         }
 
-                        if (clientList.ContainsKey(input[2].ToLower())) {
+                        if (ClientList.ContainsKey(input[2].ToLower())) {
                             string pmMessage = "";
 
                             for (int i = 3; i < input.Count; i++) {
@@ -175,7 +175,7 @@ namespace Server {
                             }
 
 							SendMessage(
-								clientList[input[2].ToLower()], 
+								ClientList[input[2].ToLower()], 
 					            new Packet(
 						            "Server", 
 			                        input[2], 
@@ -188,23 +188,33 @@ namespace Server {
                         }
                         break;
                     case "list": case "ls":
-                        if (clientList.Count == 0) {
+                        if (ClientList.Count == 0) {
                             Console.WriteLine("0 clients connected.");
                             break;
                         }
 
-                        Console.WriteLine(clientList.Count + " client(s) connected:\n");
+                        Console.WriteLine(ClientList.Count + " client(s) connected:\n");
 
-                        foreach (KeyValuePair<string, Client> client in clientList) {
+                        foreach (KeyValuePair<string, Client> client in ClientList) {
                             Console.WriteLine(client.Value.Username + " - " + client.Value.Socket.Client.LocalEndPoint);
                         }
                         break;
                     case "kick":
+                        Client c = ClientList[input[2].ToLower()];
 
-						if (clientList.ContainsKey(input[2].ToLower())) clientList.Remove(input[2].ToLower());
+                        SendMessage(c,
+                            new Packet(
+                                "Server",
+                                c.Username,
+                                VrrgDataCollectionType.Command,
+                                new [] { "disconnectClient", "true" }
+                            )
+                        );
+
+						if (ClientList.ContainsKey(input[2].ToLower())) ClientList.Remove(input[2].ToLower());
 						else Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
 
-						if (clientList.ContainsKey(input[2].ToLower())) Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
+						if (ClientList.ContainsKey(input[2].ToLower())) Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
 						else Console.WriteLine("Client \"" + input[2] + "\" was successfully kicked.");
 
                         break;
@@ -244,7 +254,7 @@ namespace Server {
         /// </summary>
 		/// <param name="packet">The packet to broadcast</param>
         public static void Broadcast (Packet packet) {
-            foreach (KeyValuePair<string, Client> pair in clientList) {
+            foreach (KeyValuePair<string, Client> pair in ClientList) {
                 try {
                     SendMessage(pair.Value, packet, false);
                     Console.WriteLine("Server > All: " + packet);
@@ -269,32 +279,32 @@ namespace Server {
                     default:
                         Console.WriteLine("Option (" + optionCount + ") does not exist");
                         break;
-                    case 0: // Set IP address and port
+                    case 0: // Set IP address and Port
                         Console.Write("IP (press ENTER to bind all available): ");
                         string result = Console.ReadLine();
 
                         if (result.Trim(' ') != "") {
-                            // Check if port was given, if so split the result at ":" and update the variables
+                            // Check if Port was given, if so split the result at ":" and update the variables
                             if (result.IndexOf(':') != -1 && result.IndexOf(':') != result.Length) {
                                 string[] temp = result.Split(':');
-                                ip = temp[0];
+                                Ip = temp[0];
 
                                 try {
-                                    port = Convert.ToInt16(temp[1]);
-                                } catch (Exception ex) {
+                                    Port = Convert.ToInt16(temp[1]);
+                                } catch (Exception) {
                                     Console.Clear();
-                                    Console.WriteLine("\nInvalid port \"" + temp[1] + "\".");
+                                    Console.WriteLine("\nInvalid Port \"" + temp[1] + "\".");
 
                                     continue;
                                 }
 
-                            } else ip = result;
-                        } else ip = "0.0.0.0";
+                            } else Ip = result;
+                        } else Ip = "0.0.0.0";
 
                         IPAddress garbage;
-                        if (IPAddress.TryParse(ip, out garbage)) optionCount++;
+                        if (IPAddress.TryParse(Ip, out garbage)) optionCount++;
                         else {
-                            Console.WriteLine("\nInvalid IP Address \"" + ip + "\". Press enter to retry.");
+                            Console.WriteLine("\nInvalid IP Address \"" + Ip + "\". Press enter to retry.");
                             Console.ReadLine();
                         }
                         break;
@@ -303,9 +313,9 @@ namespace Server {
 
 						try
 						{
-							serverName = Console.ReadLine();
+							ServerName = Console.ReadLine();
 
-							if (serverName != null && serverName.Length < 32) optionCount++;
+							if (ServerName != null && ServerName.Length < 32) optionCount++;
 							else {
 								Console.WriteLine("Server name too long (Max nr of characters is 32). Press enter to retry.");
 								Console.ReadLine();
@@ -320,12 +330,12 @@ namespace Server {
                         Console.Write("Max players (2 - 16): ");
                         string read = Console.ReadLine();
 
-                        if (string.IsNullOrEmpty(read)) maxPlayers = 16;
+                        if (string.IsNullOrEmpty(read)) MaxPlayers = 16;
                         else {
                             try {
-                                maxPlayers = Convert.ToInt16(read);
-                                if (maxPlayers < 0) maxPlayers = 2;
-                                if (maxPlayers > 16) maxPlayers = 16;
+                                MaxPlayers = Convert.ToInt16(read);
+                                if (MaxPlayers < 0) MaxPlayers = 2;
+                                if (MaxPlayers > 16) MaxPlayers = 16;
                             } catch (Exception) {
                                 // ignored
                             }
@@ -333,29 +343,13 @@ namespace Server {
 
                         optionCount++;
                         break;
-					case 2: // Set servername.
-						Console.Write("Server name: ");
-
-						try
-						{
-							serverName = Console.ReadLine();
-
-							if (serverName.Length < 32) optionCount++;
-							else {
-								Console.WriteLine("Server name too long (Max nr of characters is 32). Press enter to retry.");
-								Console.ReadLine();
-							}
-						}
-						catch (Exception ex) { }
-
-						break;
-					case 3: // Set password.
+					case 3: // Set Password.
 						Console.Write("Password (Optional, leave blank to keep the server open): ");
 
                         try {
-							password = Console.ReadLine();
+							Password = Console.ReadLine();
 
-							if (password != null && password.Length < 32) optionCount++;
+							if (Password != null && Password.Length < 32) optionCount++;
 							else {
                                 Console.WriteLine(
                                     "Password too long (Max nr of characters is 32). Press enter to retry.");
