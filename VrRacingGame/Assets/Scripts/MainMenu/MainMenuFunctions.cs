@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -27,7 +28,18 @@ namespace MainMenu
 
         public void JoinOnIp(Text targetText)
         {
-            
+            try
+            {
+                TcpClient socket = new TcpClient();
+
+                string[] address = targetText.text.Split( ':' );
+
+                socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
+            }
+            catch( Exception ex )
+            {
+                Debug.Log( ex );
+            }
         }
 
         /// <summary>
