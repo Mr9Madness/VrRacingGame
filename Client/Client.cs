@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using VrRacingGameDataCollection;
 
 namespace Client {
@@ -68,61 +67,62 @@ namespace Client {
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("\n" + ex + "\n");
+				if (!ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
 			}
 		}
 
-        private static void Listen() {
-			try
-			{
-				Packet p = new Packet(ReceiveMessage());
+        private static void HandlePassword() {
+            Packet p = new Packet(ReceiveMessage());
 
-				if (p != new Packet() &&
-					p.Type == VrrgDataCollectionType.Command &&
-					p.Variables["usernameAvailable"] != "false")
-				{
-					if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] == "true") {
-					    Console.Clear();
+            if (p != new Packet() &&
+                p.Type == VrrgDataCollectionType.Command &&
+                p.Variables["usernameAvailable"] != "false") {
+                if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] == "true") {
+                    Console.Clear();
 
-                        while (true) {
-						    Console.Write("Password: ");
+                    while (true) {
+                        Console.Write("Password: ");
 
-						    string pass = Console.ReadLine();
+                        string pass = Console.ReadLine();
 
-						    SendMessage(
-							    new Packet(
-								    Username, 
-								    "Server", 
-								    VrrgDataCollectionType.Command, 
-								    new [] { "password", pass }
-							    )
-						    );
+                        SendMessage(
+                            new Packet(
+                                Username,
+                                "Server",
+                                VrrgDataCollectionType.Command,
+                                new[] { "password", pass }
+                            )
+                        );
 
-						    Packet password = new Packet(ReceiveMessage());
+                        Packet password = new Packet(ReceiveMessage());
 
-                            if (password != new Packet() &&
-                                password.Type == VrrgDataCollectionType.Command &&
-                                password.Variables.Count > 0 &&
-                                password.Variables.ContainsKey("passwordAccepted") &&
-                                password.Variables["passwordAccepted"] == "true") {
+                        if (password != new Packet() &&
+                            password.Type == VrrgDataCollectionType.Command &&
+                            password.Variables.Count > 0 &&
+                            password.Variables.ContainsKey("passwordAccepted") &&
+                            password.Variables["passwordAccepted"] == "true") {
 
-                                Console.WriteLine("Connected to server!\nListening for server input...");
-                                Connected = true;
+                            Console.WriteLine("Connected to server!\nListening for server input...");
+                            Connected = true;
 
-                                break;
-                            }
-
-                            Console.Clear();
-							Console.WriteLine("The password you used is incorrect.");
+                            break;
                         }
-                        
-                    } else if (p.Variables["passwordRequired"] == "true") Console.WriteLine("Server does not require a password.");
-					else Console.WriteLine("Password key not found in packet");
-				}
-				else {
-					Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
-					Program.CloseConnection();
-				}
+
+                        Console.Clear();
+                        Console.WriteLine("The password you used is incorrect.");
+                    }
+
+                } else if (p.Variables["passwordRequired"] == "false") Console.WriteLine("Server does not require a password.");
+                else Console.WriteLine("Password key not found in packet");
+            } else {
+                Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
+                Program.CloseClient();
+            }
+        }
+
+        private static void Listen() {
+			try {
+			    HandlePassword();
 
 				while (Socket.Connected)
 				{
@@ -134,22 +134,28 @@ namespace Client {
 							Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
 							break;
 					    case VrrgDataCollectionType.None:
+					        Console.WriteLine("Server received packet with type \"None\": " + packet);
 					        break;
 						case VrrgDataCollectionType.Command:
+					        HandlePackets.Commands(packet);
 							break;
 						case VrrgDataCollectionType.Message:
-							break;
+                            HandlePackets.Messages(packet);
+                            break;
 					    case VrrgDataCollectionType.ChatMessage:
-					        break;
+                            HandlePackets.ChatMessages(packet);
+                            break;
 					    case VrrgDataCollectionType.MapData:
-							break;
+                            HandlePackets.MapDatas(packet);
+                            break;
 						case VrrgDataCollectionType.TransformUpdate:
-					        break;
+                            HandlePackets.TransformUpdates(packet);
+                            break;
 					}
 				}
 			} catch (Exception ex) {
-				if (ex.ToString().Contains("forcibly closed")) Program.CloseConnection("Disconnected from server: Server closed.");
-				else Console.WriteLine(ex); 
+				if (!ex.ToString().Contains("forcibly closed")) Program.CloseClient("Disconnected from server: Server closed.");
+				else Console.WriteLine(ex);
 
 			}
         }
@@ -167,7 +173,8 @@ namespace Client {
                     Console.WriteLine(message);
                 return message;
             } catch (Exception ex) {
-                Console.WriteLine("\n" + ex + "\n");
+                if (!ex.ToString().Contains("forcibly closed")) Console.WriteLine("\n" + ex + "\n");
+                Program.CloseClient();
             }
 
             return null;
