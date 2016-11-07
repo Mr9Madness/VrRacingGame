@@ -8,6 +8,11 @@ using VrRacingGameDataCollection;
 
 namespace Client {
 
+    static class Server {
+        public static string ServerName = "";
+        public static List<string> ClientList = new List<string>();
+        public static int MaxPlayers = 0;
+    }
 
     static class Client {
         private const int MAXBUFFERSIZE = 256;
@@ -41,9 +46,9 @@ namespace Client {
                 ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
             } catch (Exception ex) {
-                if (ex.ToString().Contains("actively refused")) {
+                if (ex.ToString().Contains("actively refused"))
                     Console.WriteLine("No server found at " + Ip + ":" + Port);
-                } else
+                else
                     Console.WriteLine("\n" + ex + "\n");
             }
         }
@@ -53,7 +58,7 @@ namespace Client {
 		/// </summary>
 		/// <param name="packet">The message to be sent to the client</param>
 		/// <param name="logMessage">If the message should be logged to the console</param>
-		private static void SendMessage(Packet packet, bool logMessage = true)
+		public static void SendMessage(Packet packet, bool logMessage = true)
 		{
 			try
 			{
@@ -65,10 +70,10 @@ namespace Client {
 				if (logMessage)
 					Console.WriteLine(Username + " > Server: " + packet);
 			}
-			catch (Exception ex)
-			{
-				if (!ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
-			}
+			catch (Exception ex) {
+                if (!ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
+                Program.CloseConnection("Disconnected from server: Server closed.");
+            }
 		}
 
         private static void HandlePassword() {
@@ -77,7 +82,8 @@ namespace Client {
             if (p != new Packet() &&
                 p.Type == VrrgDataCollectionType.Command &&
                 p.Variables["usernameAvailable"] != "false") {
-                if (p.Variables.ContainsKey("passwordRequired") && p.Variables["passwordRequired"] == "true") {
+
+                if (p.Variables["passwordRequired"] == "true") {
                     Console.Clear();
 
                     while (true) {
@@ -99,7 +105,6 @@ namespace Client {
                         if (password != new Packet() &&
                             password.Type == VrrgDataCollectionType.Command &&
                             password.Variables.Count > 0 &&
-                            password.Variables.ContainsKey("passwordAccepted") &&
                             password.Variables["passwordAccepted"] == "true") {
 
                             Console.WriteLine("Connected to server!\nListening for server input...");
@@ -112,11 +117,15 @@ namespace Client {
                         Console.WriteLine("The password you used is incorrect.");
                     }
 
-                } else if (p.Variables["passwordRequired"] == "false") Console.WriteLine("Server does not require a password.");
+                } else if (p.Variables["passwordRequired"] == "false") {
+                    Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\".");
+                    Connected = true;
+                }
+
                 else Console.WriteLine("Password key not found in packet");
             } else {
                 Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
-                Program.CloseClient();
+                Program.CloseConnection();
             }
         }
 
@@ -154,10 +163,9 @@ namespace Client {
 					}
 				}
 			} catch (Exception ex) {
-				if (!ex.ToString().Contains("forcibly closed")) Program.CloseClient("Disconnected from server: Server closed.");
-				else Console.WriteLine(ex);
-
-			}
+			    if (!ex.ToString().Contains("forcibly closed") && !ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
+                Program.CloseConnection("Disconnected from server: Server closed.");
+            }
         }
 
         private static string ReceiveMessage(bool logMessage = true) {
@@ -173,8 +181,8 @@ namespace Client {
                     Console.WriteLine(message);
                 return message;
             } catch (Exception ex) {
-                if (!ex.ToString().Contains("forcibly closed")) Console.WriteLine("\n" + ex + "\n");
-                Program.CloseClient();
+                if (!ex.ToString().Contains("forcibly closed") && !ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
+                Program.CloseConnection("Disconnected from server: Server closed.");
             }
 
             return null;
