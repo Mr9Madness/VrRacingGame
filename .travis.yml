@@ -1,6 +1,9 @@
 language: csharp
 solution: server.sln
 
-matrix:
-  include:
-    - mono: latest
+mono:
+    - latest
+
+env:
+    - Server=VrRacingServer
+script: cd $Server

@@ -25,6 +25,11 @@ namespace MainMenu
 #endif
         }
 
+        public void JoinOnIp(Text targetText)
+        {
+            
+        }
+
         /// <summary>
         /// Change the preset Quality level
         /// </summary>
