@@ -31,6 +31,17 @@ namespace Client {
                         if (!Client.Connected) continue;
 
                         string input = Console.ReadLine();
+                        if (input == "message") {
+                            Client.SendMessage(
+                                new Packet(
+                                    Client.Username,
+                                    "All",
+                                    VrrgDataCollectionType.Message,
+                                    new[] { "Message", "This is a message to all clients" }
+                                )
+                            );
+                        }
+
                         if (input == "disconnect") {
                             CloseConnection();
                             break;

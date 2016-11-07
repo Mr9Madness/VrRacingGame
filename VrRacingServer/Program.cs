@@ -91,7 +91,6 @@ namespace Server {
 
                 try {
                     client = new Client(Listener.AcceptTcpClient());
-                    Console.WriteLine("New connection request.");
 
                 } catch (Exception ex) {
                     if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
@@ -254,15 +253,19 @@ namespace Server {
         /// </summary>
 		/// <param name="packet">The packet to broadcast</param>
         public static void Broadcast (Packet packet) {
-            foreach (KeyValuePair<string, Client> pair in ClientList) {
-                try {
-                    SendMessage(pair.Value, packet, false);
-                    Console.WriteLine("Server > All: " + packet);
-                } catch (Exception ex) {
-                    Console.WriteLine("\n" + ex + "\n");
+            try {
+                foreach (KeyValuePair<string, Client> pair in ClientList) {
+                    try {
+                        SendMessage(pair.Value, packet, false);
+                        Console.WriteLine("Server > All: " + packet);
+                    } catch (Exception ex) {
+                        Console.WriteLine("\n" + ex + "\n");
 
-                    CloseClient(pair.Value);
+                        CloseClient(pair.Value);
+                    }
                 }
+            } catch (Exception) {
+                // ignored
             }
         }
 

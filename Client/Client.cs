@@ -107,7 +107,7 @@ namespace Client {
                             password.Variables.Count > 0 &&
                             password.Variables["passwordAccepted"] == "true") {
 
-                            Console.WriteLine("Connected to server!\nListening for server input...");
+                            Console.WriteLine("Connected to \"" + password.Variables["serverName"] + "\"!");
                             Connected = true;
 
                             break;
@@ -118,7 +118,7 @@ namespace Client {
                     }
 
                 } else if (p.Variables["passwordRequired"] == "false") {
-                    Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\".");
+                    Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\"!");
                     Connected = true;
                 }
 

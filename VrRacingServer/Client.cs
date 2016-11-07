@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using VrRacingGameDataCollection;
 
 namespace Server {
@@ -10,6 +11,7 @@ namespace Server {
         private const int MAXBUFFERSIZE = 256;
         public string Username;
         public TcpClient Socket;
+        public Thread ListenToClient;
 
         public Client(TcpClient socket) {
             Console.WriteLine("New connection request.");
@@ -36,6 +38,16 @@ namespace Server {
             return null;
         }
 
+        public static string FirstCharToUpper (string input) {
+            if (string.IsNullOrEmpty(input))
+                throw new ArgumentException("ARGH!");
+            return input.First().ToString().ToUpper() + input.Substring(1);
+        }
+
+        private void Listen() {
+            while (true) Program.Broadcast(ReceiveMessage());
+        }
+
         private void CheckNewClientInfo() {
             try {
 				Packet packet = ReceiveMessage();
@@ -55,6 +67,9 @@ namespace Server {
                 if (!Program.ClientList.ContainsKey(Username.ToLower())) {
                     if (Program.Password == "") {
                         Program.ClientList.Add(Username.ToLower(), this);
+                        ListenToClient = new Thread(Listen);
+                        ListenToClient.Start();
+
                         Console.WriteLine(Username + " has joined the server.\n");
                     }
 
@@ -71,7 +86,7 @@ namespace Server {
                         "usernameAvailable", isAccepted, "passwordRequired", "false",
                         "serverName", Program.ServerName,
                         "maxPlayers", Program.MaxPlayers.ToString(),
-                        "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray())
+                        "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper))
                     };
                 }
 
@@ -85,7 +100,7 @@ namespace Server {
 					)
 				);
 
-                if (isAccepted != "true") return;
+                if (isAccepted == "true") return;
 
                 isAccepted = "false";
                 while (isAccepted == "false") {
@@ -93,6 +108,10 @@ namespace Server {
 
                     if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("Password")) {
                         if (Program.Password == packet.Variables["Password"]) {
+                            if (!Program.ClientList.ContainsKey(Username)) Program.ClientList.Add(Username, this);
+                            ListenToClient = new Thread(Listen);
+                            ListenToClient.Start();
+
                             Console.WriteLine(Username + " has joined the server.\n");
                             isAccepted = "true";
                         }
