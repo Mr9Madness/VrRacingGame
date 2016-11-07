@@ -6,3 +6,4 @@ mono:
 
 env:
     - Server=VrRacingServer
+script: cd $Server

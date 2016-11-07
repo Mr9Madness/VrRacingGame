@@ -1,25 +1,25 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 namespace LevelEditor
 {
 	public class TileMap : MonoBehaviour
 	{
-		private Data.LevelData _tileData;
+        private Data.LevelData _tileData;
 
 		public GameObject[] Trackparts;
 		public Transform TrackContainer;
 
 		public string MapName;
 
-		void Start()
-		{        
-			InitLevel();
-		}
+        void Start()
+        {
+            _tileData = new Data.LevelData();
+        }
 
 		public void InitLevel()
 		{
-			//_tileData = LevelData.CreateFromJson( MapName );
+			_tileData = Data.LevelData.CreateFromJson( MapName );
 
 			if ( TrackContainer == null )
 				TrackContainer = new GameObject( "Track" ).transform;
@@ -46,5 +46,10 @@ namespace LevelEditor
 					DestroyImmediate( child.gameObject );
 
 		}
+
+        public void CreateJsonFile()
+        {
+            Data.LevelData.ToJsonFile( "test", _tileData );
+        }
 	}
 }

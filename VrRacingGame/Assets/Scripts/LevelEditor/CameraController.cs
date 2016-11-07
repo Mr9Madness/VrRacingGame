@@ -9,8 +9,7 @@ namespace LevelEditor
 		public float MouseSensitivity = 1.5f;
 		private Rigidbody _rigidbody;
 
-
-		private float _yaw = 0;
+		private float _yaw = 45;
 		private float _pitch = 0;
 
 		void Start()
@@ -26,12 +25,24 @@ namespace LevelEditor
 			if( Input.GetMouseButton( 1 ) )
 				Rotate();
 
+            if( Input.GetMouseButton( 0 ) )
+            {
+                Ray mouseRay = Camera.main.ScreenPointToRay( Input.mousePosition );
+                RaycastHit mouseRayHit;
+
+                if( Physics.Raycast( mouseRay, out mouseRayHit, 100f ) )
+                {
+                    Debug.Log( mouseRayHit.point );
+                }
+            }
+
 			Move( horizontal * Speed, vertical * Speed );
 		}
 
 		void Move( float horizontal, float vertical )
 		{
-			_rigidbody.velocity = new Vector3( horizontal, 0, vertical ) * Time.deltaTime;
+            Vector3 horizontalPos = transform.rotation * new Vector3( horizontal, 0, vertical );
+            _rigidbody.velocity = horizontalPos * Time.deltaTime;
 		}
 
 		void Rotate()
@@ -39,7 +50,8 @@ namespace LevelEditor
 			_yaw += MouseSensitivity * Input.GetAxis( "Mouse Y" ) * Time.deltaTime;
 			_pitch -= MouseSensitivity * Input.GetAxis( "Mouse X" ) * Time.deltaTime;
 
-			transform.eulerAngles = new Vector3( _yaw, _pitch );
+            transform.eulerAngles = new Vector3( transform.eulerAngles.x, _pitch );
+            Camera.main.transform.eulerAngles = new Vector3( _yaw, transform.eulerAngles.y );
 		}
 	}
 }
