@@ -30,7 +30,6 @@ namespace Server {
 		public static string password = "";
         public static int port = 25001;
         public static int maxPlayers = 0;
-        public static bool running = false;
 
         public static void CloseClient(Client client) {
             if (client == null) return;
@@ -46,10 +45,12 @@ namespace Server {
                 );
 
             while (client.Socket.Connected) client.Socket.Close();
-            if (clientList.ContainsKey(client.Username.ToLower())) clientList.Remove(client.Username.ToLower());
+            clientList.Remove(client.Username);
 
-            Console.WriteLine(client.Username + " left the server.");
-            
+            if (clientList.ContainsKey(client.Username.ToLower()))
+                clientList.Remove(client.Username.ToLower());
+
+            Console.WriteLine(client.Username + " has left the server.");
             client = null;
         }
 
@@ -70,7 +71,7 @@ namespace Server {
                 ListenForClients.Start();
             } catch (Exception ex) {
                 Console.WriteLine("\n" + ex + "\n");
-
+            
                 CloseServer();
             }
             
@@ -90,11 +91,10 @@ namespace Server {
 
                 try {
                     client = new Client(Listener.AcceptTcpClient());
-                    
-                    CloseClient(client);
+                    Console.WriteLine("New connection request.");
 
                 } catch (Exception ex) {
-                    Console.WriteLine("\n" + ex + "\n");
+                    if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
 
                     CloseClient(client);
 
@@ -223,10 +223,8 @@ namespace Server {
 		/// </summary>
 		/// <param name="client">The client to receive the packet</param>
 		/// <param name="packet">The packet to be sent to the client</param>
-		public static void SendMessage(Client client, Packet packet, bool logMessage = true)
-		{
-			try
-			{
+		public static void SendMessage(Client client, Packet packet, bool logMessage = true) {
+			try {
 				byte[] buffer = Encoding.ASCII.GetBytes(packet.ToString());
 
 				NetworkStream sendStream = client.Socket.GetStream();
@@ -234,10 +232,8 @@ namespace Server {
 
 				if (logMessage)
 					Console.WriteLine("Server > " + client.Username + ": " + packet);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("\n" + ex + "\n");
+			} catch (Exception ex) {
+				if (!ex.ToString().Contains("forcibly closed")) Console.WriteLine("\n" + ex + "\n");
 
 				CloseClient(client);
 			}
@@ -302,7 +298,25 @@ namespace Server {
                             Console.ReadLine();
                         }
                         break;
-                    case 1: // Set max players.
+					case 1: // Set servername.
+						Console.Write("Server name: ");
+
+						try
+						{
+							serverName = Console.ReadLine();
+
+							if (serverName != null && serverName.Length < 32) optionCount++;
+							else {
+								Console.WriteLine("Server name too long (Max nr of characters is 32). Press enter to retry.");
+								Console.ReadLine();
+							}
+						}
+						catch (Exception) { 
+                            // ignored
+                        }
+
+                        break;
+                    case 2: // Set max players.
                         Console.Write("Max players (2 - 16): ");
                         string read = Console.ReadLine();
 
@@ -312,7 +326,9 @@ namespace Server {
                                 maxPlayers = Convert.ToInt16(read);
                                 if (maxPlayers < 0) maxPlayers = 2;
                                 if (maxPlayers > 16) maxPlayers = 16;
-                            } catch (Exception ex) { Console.WriteLine("\n" + ex + "\n"); }
+                            } catch (Exception) {
+                                // ignored
+                            }
                         }
 
                         optionCount++;
@@ -330,22 +346,24 @@ namespace Server {
 								Console.ReadLine();
 							}
 						}
-						catch (Exception ex) { Console.WriteLine("\n" + ex + "\n"); }
+						catch (Exception ex) { }
 
 						break;
 					case 3: // Set password.
 						Console.Write("Password (Optional, leave blank to keep the server open): ");
 
                         try {
-                            password = Console.ReadLine();
+							password = Console.ReadLine();
 
-                            if (password.Length < 32) optionCount++;
-                            else {
+							if (password != null && password.Length < 32) optionCount++;
+							else {
                                 Console.WriteLine(
                                     "Password too long (Max nr of characters is 32). Press enter to retry.");
-                                Console.ReadLine();
-                            }
-                        } catch (Exception ex) { Console.WriteLine("\n" + ex + "\n"); }
+								Console.ReadLine();
+							}
+						} catch (Exception) {
+						    // ignored
+						}
 
 						break;
                 }

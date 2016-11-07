@@ -31,7 +31,7 @@ namespace Client {
                         if (!Client.Connected) continue;
 
                         string input = Console.ReadLine();
-                        if (input == "disconnect") CloseClient();
+                        if (input == "disconnect") CloseConnection();
                         if (input == "exit") Environment.Exit(0);
                     }
 
@@ -52,18 +52,13 @@ namespace Client {
             }
         }
 
-        public static void CloseClient(string message = "") {
-            try {
-                Client.ListenToServer.Abort();
-                Console.WriteLine("Penis");
+        public static void CloseConnection(string message = "") {
+            Client.ListenToServer.Abort();
 
-                while (Client.Socket != null)
-                    Client.Socket.Close();
+            while (Client.Socket != null)
+                Client.Socket.Close();
 
-                if (message.Trim(' ').Length > 0) Console.WriteLine(message);
-            } catch (Exception ex) {
-                if (!ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
-            }
+			if (message.Trim(' ').Length > 0) Console.WriteLine(message);
         }
 
         /// <summary>
@@ -81,7 +76,7 @@ namespace Client {
                         break;
                     case 0: // Set max players.
                         Console.Write("Username (3 - 32 characters): ");
-                        string username = Console.ReadLine()?.Trim(' ');
+                        string username = Console.ReadLine()?.Trim(' ') ?? "";
 
                         if (username?.Length < 3) {
                             Console.Clear();
