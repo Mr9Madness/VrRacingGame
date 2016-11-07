@@ -3,9 +3,8 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.20506</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <RootNamespace></RootNamespace>
     <ProjectGuid>{F97F1578-123C-CE16-3122-1783B9A3CF8D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -34,26 +33,31 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.XML" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="UnityEngine">
-      <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll</HintPath>
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor">
-      <HintPath>D:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll</HintPath>
+      <HintPath>D:\Program Files\Unity\Editor\Data\Managed\UnityEditor.dll</HintPath>
     </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\CarController.cs" />
-     <Compile Include="Assets\Scripts\MainMenu\MainMenuController.cs" />
-     <Compile Include="Assets\Scripts\MainMenu\MainMenuFunctions.cs" />
- <Reference Include="UnityEngine.UI">
- <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
- </Reference>
- <Reference Include="UnityEngine.Networking">
- <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
- </Reference>
+    <Compile Include="Assets\Scripts\CarController.cs" />
+    <Compile Include="Assets\Scripts\LevelData.cs" />
+    <Compile Include="Assets\Scripts\LevelEditor\CameraController.cs" />
+    <Compile Include="Assets\Scripts\LevelEditor\TileMap.cs" />
+    <Compile Include="Assets\Scripts\MainMenu\MainMenuController.cs" />
+    <Compile Include="Assets\Scripts\MainMenu\MainMenuFunctions.cs" />
+    <Compile Include="Assets\Scripts\TileMap.cs" />
+    <None Include="Assets\Data\level\level1.json" />
+    <Reference Include="UnityEngine.UI">
+      <HintPath>D:\Program Files\Unity\Editor\Data\UnityExtensions\Unity\GUISystem\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>D:\Program Files\Unity\Editor\Data\UnityExtensions\Unity\Networking\UnityEngine.Networking.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -63,5 +67,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  
+  <ItemGroup>
+    <Folder Include="Assets\Scripts\Data\" />
+  </ItemGroup>
 </Project>
