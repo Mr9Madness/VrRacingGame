@@ -30,7 +30,7 @@ namespace Client {
                     while (Client.Socket != null && Client.Socket.Connected) {
                         if (!Client.Connected) continue;
 
-                        string input = Console.ReadLine();
+                       string input = Console.ReadLine();
                         if (input == "disconnect") CloseConnection();
                         if (input == "exit") Environment.Exit(0);
                     }
@@ -82,7 +82,7 @@ namespace Client {
                         break;
                     case 0: // Set max players.
                         Console.Write("Username (3 - 32 characters): ");
-                        string username = Console.ReadLine()?.Trim(' ');
+                        string username = Console.ReadLine()?.Trim(' ') ?? "";
 
                         if (username.Length < 3) {
                             Console.WriteLine("\nThe username \"" + username + "\" is too short. Press enter to retry.");
@@ -93,11 +93,11 @@ namespace Client {
                                 temp += username[i];
 
                             Client.Username = temp;
+                            optionCount++;
                         } else {
                             Client.Username = username;
+                            optionCount++;
                         }
-
-                        optionCount++;
                         break;
                     case 1: // Set IP address and port
                         Console.Write("Server IP: ");
