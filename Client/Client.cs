@@ -20,7 +20,8 @@ namespace Client {
         public static string Username;
         public static string Ip;
 		public static int Port;
-		public static bool Connected;
+        public static bool Connected;
+        public static bool isClosing;
 
         public static TcpClient Socket;
         public static Thread ListenToServer;
@@ -29,6 +30,7 @@ namespace Client {
             Ip = ip;
             Port = port;
 			Connected = false;
+            isClosing = false;
 
             try {
                 Socket = new TcpClient();
@@ -42,7 +44,7 @@ namespace Client {
 						new [] { "username", Username }
                		)
 	            );
-
+                
                 ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
             } catch (Exception ex) {
@@ -71,12 +73,16 @@ namespace Client {
 					Console.WriteLine(Username + " > Server: " + packet);
 			}
 			catch (Exception ex) {
-                if (!ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
-                Program.CloseConnection("Disconnected from server: Server closed.");
+                if (!ex.ToString().Contains("Thread was being aborted") &&
+                    !ex.ToString().Contains("disposed object"))
+                    Console.WriteLine("\n" + ex + "\n");
+
+                if (!isClosing)
+                    Program.CloseConnection("Disconnected from server.");
             }
 		}
 
-        private static void HandlePassword() {
+        private static bool HandlePassword() {
             Packet p = new Packet(ReceiveMessage());
 
             if (p != new Packet() &&
@@ -124,16 +130,20 @@ namespace Client {
 
                 else Console.WriteLine("Password key not found in packet");
             } else {
-                Console.WriteLine("The username \"" + Username + "\" already in use on this server.\nClosing connection...");
-                Program.CloseConnection();
+                Console.Clear();
+                if (!isClosing)
+                    Program.CloseConnection("Username not available.");
             }
+
+            return Connected;
         }
 
         private static void Listen() {
 			try {
-			    HandlePassword();
+                if (!HandlePassword())
+                    return;
 
-				while (Socket.Connected)
+				while (Socket.Connected && !isClosing)
 				{
 					Packet packet = new Packet(ReceiveMessage());
 
@@ -163,8 +173,12 @@ namespace Client {
 					}
 				}
 			} catch (Exception ex) {
-			    if (!ex.ToString().Contains("forcibly closed") && !ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
-                Program.CloseConnection("Disconnected from server: Server closed.");
+			    if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("Thread was being aborted"))
+                    Console.WriteLine("\n" + ex + "\n");
+
+                if (!isClosing)
+                    Program.CloseConnection("Disconnected from server.");
             }
         }
 
@@ -181,8 +195,12 @@ namespace Client {
                     Console.WriteLine(message);
                 return message;
             } catch (Exception ex) {
-                if (!ex.ToString().Contains("forcibly closed") && !ex.ToString().Contains("Thread was being aborted")) Console.WriteLine("\n" + ex + "\n");
-                Program.CloseConnection("Disconnected from server: Server closed.");
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("Thread was being aborted"))
+                    Console.WriteLine("\n" + ex + "\n");
+
+                if (!isClosing)
+                    Program.CloseConnection("Disconnected from server.");
             }
 
             return null;
