@@ -35,6 +35,8 @@ namespace MainMenu
                 string[] address = targetText.text.Split( ':' );
 
                 socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
+
+                SceneManager.LoadScene("main");
             }
             catch( Exception ex )
             {

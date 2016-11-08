@@ -30,8 +30,10 @@ namespace LevelEditor
                 Ray mouseRay = Camera.main.ScreenPointToRay( Input.mousePosition );
                 RaycastHit mouseRayHit;
 
-                if( Physics.Raycast( mouseRay, out mouseRayHit, 100f ) )
+                if( Physics.Raycast( mouseRay, out mouseRayHit, Mathf.Infinity ) )
                 {
+                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x ) / 32, 0, Mathf.FloorToInt( mouseRayHit.point.y ) / 32 );
+                    Debug.Log( mousePos );
                     Debug.Log( mouseRayHit.point );
                 }
             }
