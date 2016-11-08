@@ -34,15 +34,18 @@ namespace Server {
         public static void CloseClient(Client client) {
             if (client == null) return;
 
-            if (client.Socket.Connected) SendMessage(
+            if (client.Socket.Connected)
+                SendMessage(
                     client, 
                     new Packet(
                         "Server",
                         client.Username,
                         VrrgDataCollectionType.Command,
-                        new [] { "serverClosed", "true" }
+                        new [] { "disconnectClient", "true" }
                     )
                 );
+
+            client.ListenToClient.Abort();
 
             while (client.Socket.Connected) client.Socket.Close();
             ClientList.Remove(client.Username);
@@ -89,17 +92,16 @@ namespace Server {
             while (true) {
                 Client client = null;
 
-                try {
-                    client = new Client(Listener.AcceptTcpClient());
-
-                } catch (Exception ex) {
+                try { client = new Client(Listener.AcceptTcpClient()); }
+                catch (Exception ex) {
                     if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
 
-                    CloseClient(client);
-
+                    if (client != null) CloseClient(client);
                     break;
                 }
             }
+
+            Listener.Stop();
         }
 
         private static void CloseServer() {
@@ -179,8 +181,8 @@ namespace Server {
 						            "Server", 
 			                        input[2], 
 						            VrrgDataCollectionType.Message,
-						            new string[] { "message", pmMessage }
-								), true
+						            new [] { "message", pmMessage }
+								)
 							);
                         } else {
                             Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
@@ -188,7 +190,7 @@ namespace Server {
                         break;
                     case "list": case "ls":
                         if (ClientList.Count == 0) {
-                            Console.WriteLine("0 clients connected.");
+                            Console.WriteLine("No clients connected.");
                             break;
                         }
 
@@ -210,11 +212,17 @@ namespace Server {
                             )
                         );
 
-						if (ClientList.ContainsKey(input[2].ToLower())) ClientList.Remove(input[2].ToLower());
-						else Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
+                        if (ClientList.ContainsKey(input[2].ToLower())) {
+                            ClientList.Remove(input[2].ToLower());
 
-						if (ClientList.ContainsKey(input[2].ToLower())) Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
-						else Console.WriteLine("Client \"" + input[2] + "\" was successfully kicked.");
+                            if (ClientList.ContainsKey(input[2].ToLower()))
+                                Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
+                            else
+                                Console.WriteLine("Client \"" + input[2] + "\" was successfully kicked.");
+                        } else
+                            Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
+
+						
 
                         break;
                     case "exit": case "quit": case "close": case "stop":
@@ -242,9 +250,12 @@ namespace Server {
 				if (logMessage)
 					Console.WriteLine("Server > " + client.Username + ": " + packet);
 			} catch (Exception ex) {
-				if (!ex.ToString().Contains("forcibly closed")) Console.WriteLine("\n" + ex + "\n");
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("valid Vrrg Packet") &&
+                    !ex.ToString().Contains("connection was aborted"))
+                    Console.WriteLine("\"" + ex + "\"");
 
-				CloseClient(client);
+                CloseClient(client);
 			}
 		}
 
@@ -259,7 +270,10 @@ namespace Server {
                         SendMessage(pair.Value, packet, false);
                         Console.WriteLine("Server > All: " + packet);
                     } catch (Exception ex) {
-                        Console.WriteLine("\n" + ex + "\n");
+                        if (!ex.ToString().Contains("forcibly closed") &&
+                            !ex.ToString().Contains("valid Vrrg Packet") &&
+                            !ex.ToString().Contains("connection was aborted"))
+                            Console.WriteLine("\"" + ex + "\"");
 
                         CloseClient(pair.Value);
                     }

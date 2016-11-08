@@ -31,24 +31,26 @@ namespace Client {
                         if (!Client.Connected) continue;
 
                         string input = Console.ReadLine();
-                        if (input == "message") {
+                        if (input != null && input.Length > 7 && input.Substring(0,7).Contains("message")) {
                             Client.SendMessage(
                                 new Packet(
                                     Client.Username,
                                     "All",
                                     VrrgDataCollectionType.Message,
-                                    new[] { "Message", "This is a message to all clients" }
+                                    new[] { "Message", input.Substring(7) }
                                 )
                             );
                         }
 
                         if (input == "disconnect") {
-                            CloseConnection();
+                            if (!Client.isClosing)
+                                CloseConnection();
                             break;
                         }
 
                         if (input == "exit") {
-                            CloseConnection();
+                            if (!Client.isClosing)
+                                CloseConnection();
                             Environment.Exit(0);
                         }
                     }
@@ -56,6 +58,7 @@ namespace Client {
                     Console.WriteLine("Disconnected from server!");
                     Console.Write("Try to reconnect? (Y/N): ");
                     ans = Console.ReadKey().KeyChar;
+                    Client.isClosing = false;
                     Console.Clear();
 
                     if (ans == 'n' || ans == 'N')
@@ -63,6 +66,7 @@ namespace Client {
                 }
                 Console.Write("Would you like to try to restart the client? (Y/N): ");
                 ans = Console.ReadKey().KeyChar;
+                Client.isClosing = false;
                 Console.Clear();
 
                 if (ans == 'n' || ans == 'N')
@@ -71,23 +75,32 @@ namespace Client {
         }
 
         public static void CloseConnection(string message = "") {
-            Client.SendMessage(
-                new Packet(
-                    Client.Username,
-                    "Server",
-                    VrrgDataCollectionType.Command,
-                    new [] { "disconnectRequest", "true" }
-                )
-            );
+            Client.isClosing = true;
 
-            Client.ListenToServer.Abort();
+            if (Client.Socket != null && Client.Socket.Connected)
+                Client.SendMessage(
+                    new Packet(
+                        Client.Username,
+                        "Server",
+                        VrrgDataCollectionType.Command,
+                        new[] {"disconnectRequest", "true"}
+                    )
+                );
 
-            Client.Socket.Client.Disconnect(false);
-            while (Client.Socket != null)
-                Client.Socket.Close();
+            Console.WriteLine("Pre closed-message1");
 
+            try {
+                Client.ListenToServer.();
+            } catch (Exception ex) {
+                Console.WriteLine("\n" + ex + "\n");
+            }
 
-			if (message.Trim(' ').Length > 0) Console.WriteLine(message);
+            Console.WriteLine("Pre closed-message2");
+            Client.Socket?.Close();
+            Console.WriteLine("Pre closed-message3");
+
+            if (message.Trim(' ').Length > 0) Console.WriteLine(message);
+            Console.WriteLine("Closed.");
         }
 
         /// <summary>

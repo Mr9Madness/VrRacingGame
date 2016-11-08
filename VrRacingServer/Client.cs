@@ -31,7 +31,10 @@ namespace Server {
 				if (logMessage) Console.WriteLine(Username + " > Server: " + Encoding.ASCII.GetString(actualRead.ToArray()));
 				return new Packet(Encoding.ASCII.GetString(actualRead.ToArray()));
             } catch (Exception ex) {
-                if (!ex.ToString().Contains("forcibly closed")) Console.WriteLine("\"" + ex + "\"");
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("valid Vrrg Packet") && 
+                    !ex.ToString().Contains("connection was aborted"))
+                    Console.WriteLine("\"" + ex + "\"");
                 
                 Program.CloseClient(this);
             }
@@ -45,97 +48,98 @@ namespace Server {
         }
 
         private void Listen() {
-            while (true) Program.Broadcast(ReceiveMessage());
+            while (Socket != null && Socket.Connected) {
+                Packet packet = ReceiveMessage();
+                if (packet == new Packet()) break;
+
+                if (packet.Type != VrrgDataCollectionType.Command)
+                    Program.Broadcast(packet);
+            }
+
+            Program.CloseClient(this);
         }
 
         private void CheckNewClientInfo() {
-            try {
-				Packet packet = ReceiveMessage();
+			Packet packet = ReceiveMessage();
 
-                if (packet.Type != VrrgDataCollectionType.Command) {
-                    Console.WriteLine("Unexpected packet type \"" + packet.Type + "\".");
-                    return;
+            if (packet.Type != VrrgDataCollectionType.Command) {
+                Console.WriteLine("Unexpected packet type \"" + packet.Type + "\".");
+                return;
+            }
+			if (!packet.Variables.ContainsKey("username")) {
+                Console.WriteLine("Packet does not contain the expected \"username\" key.");
+                return;
+            }
+
+			Username = packet.Variables["username"];
+			string isAccepted = "false";
+
+            if (!Program.ClientList.ContainsKey(Username.ToLower())) {
+                if (Program.Password == "") {
+                    Program.ClientList.Add(Username.ToLower(), this);
+                    ListenToClient = new Thread(Listen);
+                    ListenToClient.Start();
+
+                    Console.WriteLine(Username + " has joined the server.\n");
                 }
-				if (!packet.Variables.ContainsKey("username")) {
-                    Console.WriteLine("Packet does not contain the expected \"username\" key.");
-                    return;
-                }
 
-				Username = packet.Variables["username"];
-				string isAccepted = "false";
+				isAccepted = "true";
+            } else Console.WriteLine("Connection request denied, username \"" + Username + "\" was already in use.\n");
 
-                if (!Program.ClientList.ContainsKey(Username.ToLower())) {
-                    if (Program.Password == "") {
-                        Program.ClientList.Add(Username.ToLower(), this);
+            string[] variables;
+            if (Program.Password != "") {
+                variables = new[] {
+                    "usernameAvailable", isAccepted, "passwordRequired", "true"
+                };
+            } else {
+                variables = new [] {
+                    "usernameAvailable", isAccepted, "passwordRequired", "false",
+                    "serverName", Program.ServerName,
+                    "maxPlayers", Program.MaxPlayers.ToString(),
+                    "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper))
+                };
+            }
+
+			Program.SendMessage(
+				this,
+				new Packet(
+					"Server",
+					Username,
+					VrrgDataCollectionType.Command,
+					variables
+				)
+			);
+
+            if (isAccepted == "true") return;
+
+            isAccepted = "false";
+            while (isAccepted == "false") {
+                packet = ReceiveMessage(true);
+
+                if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("Password")) {
+                    if (Program.Password == packet.Variables["Password"]) {
+                        if (!Program.ClientList.ContainsKey(Username)) Program.ClientList.Add(Username, this);
                         ListenToClient = new Thread(Listen);
                         ListenToClient.Start();
 
                         Console.WriteLine(Username + " has joined the server.\n");
+                        isAccepted = "true";
                     }
 
-					isAccepted = "true";
-                } else Console.WriteLine("Connection request denied, username \"" + Username + "\" was already in use.\n");
-
-                string[] variables;
-                if (Program.Password != "") {
-                    variables = new[] {
-                        "usernameAvailable", isAccepted, "passwordRequired", "true"
-                    };
-                } else {
-                    variables = new [] {
-                        "usernameAvailable", isAccepted, "passwordRequired", "false",
-                        "serverName", Program.ServerName,
-                        "maxPlayers", Program.MaxPlayers.ToString(),
-                        "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper))
-                    };
-                }
-
-				Program.SendMessage(
-					this,
-					new Packet(
-						"Server",
-						Username,
-						VrrgDataCollectionType.Command,
-						variables
-					)
-				);
-
-                if (isAccepted == "true") return;
-
-                isAccepted = "false";
-                while (isAccepted == "false") {
-                    packet = ReceiveMessage(true);
-
-                    if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("Password")) {
-                        if (Program.Password == packet.Variables["Password"]) {
-                            if (!Program.ClientList.ContainsKey(Username)) Program.ClientList.Add(Username, this);
-                            ListenToClient = new Thread(Listen);
-                            ListenToClient.Start();
-
-                            Console.WriteLine(Username + " has joined the server.\n");
-                            isAccepted = "true";
-                        }
-
-                        Program.SendMessage(
-                            this,
-                            new Packet(
-                                "Server",
-                                Username,
-                                VrrgDataCollectionType.Command,
-                                new[] { "passwordAccepted", isAccepted,
-                                    "serverName", Program.ServerName,
-                                    "maxPlayers", Program.MaxPlayers.ToString(),
-                                    "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray())
-                                }
-                            )
-                        );
-                    } else Console.WriteLine("Received packet does not meet expectations of a Password-packet.");
-                }
-            } catch (Exception ex) {
-                if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
-                
-                Program.CloseClient(this);
-
+                    Program.SendMessage(
+                        this,
+                        new Packet(
+                            "Server",
+                            Username,
+                            VrrgDataCollectionType.Command,
+                            new[] { "passwordAccepted", isAccepted,
+                                "serverName", Program.ServerName,
+                                "maxPlayers", Program.MaxPlayers.ToString(),
+                                "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray())
+                            }
+                        )
+                    );
+                } else Console.WriteLine("Received packet does not meet expectations of a Password-packet.");
             }
         }
     }
