@@ -18,6 +18,17 @@ namespace Server {
             Socket = socket;
 
             CheckNewClientInfo();
+
+            Console.WriteLine("Before");
+            Program.Broadcast(
+                new Packet(
+                    "Server",
+                    "All",
+                    VrrgDataCollectionType.Command,
+                    new[] { "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper)) }
+                )
+            );
+            Console.WriteLine("After");
         }
 
         private Packet ReceiveMessage(bool logMessage = false) {
@@ -95,8 +106,7 @@ namespace Server {
                 variables = new [] {
                     "usernameAvailable", isAccepted, "passwordRequired", "false",
                     "serverName", Program.ServerName,
-                    "maxPlayers", Program.MaxPlayers.ToString(),
-                    "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper))
+                    "maxPlayers", Program.MaxPlayers.ToString()
                 };
             }
 
@@ -134,8 +144,7 @@ namespace Server {
                             VrrgDataCollectionType.Command,
                             new[] { "passwordAccepted", isAccepted,
                                 "serverName", Program.ServerName,
-                                "maxPlayers", Program.MaxPlayers.ToString(),
-                                "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray())
+                                "maxPlayers", Program.MaxPlayers.ToString()
                             }
                         )
                     );

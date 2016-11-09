@@ -8,9 +8,22 @@ namespace Client {
     static class HandlePackets {
 
         public static void Commands (Packet p) {
-            if (p.Variables.ContainsKey("serverClosed") && p.Variables["serverClosed"] == "true" ||
-                p.Variables.ContainsKey("disconnectClient") && p.Variables["disconnectClient"] == "true")
-                Program.CloseConnection("Disconnected from server.");
+            foreach (KeyValuePair<string, string> variable in p.Variables) {
+                switch (variable.Key) {
+                    default:
+                        Console.WriteLine("WARNING: Unhandled variable in Vrrg Command Packet: \"" + variable.Key + "\"");
+                        break;
+                    case "serverClosed": case "disconnectClient":
+                        if (variable.Value == "true")
+                            if (!Client.isClosing)
+                                Program.CloseConnection("Disconnected from server.");
+                        break;
+                    case "clientList":
+                        Console.WriteLine("In CASE");
+                        Server.ClientList = new List<string>(variable.Value.Split(new [] { "\\3\\" }, StringSplitOptions.None));
+                        break;
+                }
+            }
         }
 
         public static void Messages (Packet p) {
