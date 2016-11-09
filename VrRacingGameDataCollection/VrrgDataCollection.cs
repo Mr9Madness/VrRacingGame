@@ -38,11 +38,12 @@ namespace VrRacingGameDataCollection
 						packet.To = keyValue[1];
 						break;
 					case "Type":
-						VrrgDataCollectionType type;
-						if (!Enum.TryParse(keyValue[1], true, out type))
+				        try {
+                            packet.Type = (VrrgDataCollectionType)Enum.Parse(typeof(VrrgDataCollectionType), keyValue[1]);
+                        } catch (Exception) {
                             throw new Exception("Type \"" + keyValue[1] + "\" is not an underlying value of VrrgDataCollectionType.");
+                        }
 
-						packet.Type = type;
 						break;
 				}
 			}
