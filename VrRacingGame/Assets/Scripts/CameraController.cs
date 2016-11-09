@@ -9,7 +9,9 @@ namespace Assets.Scripts
         private float _pitch = 0;
         public float MouseSensitivity = 1.5f;
 
-//        bool controllerInput = false;
+        Vector3 oldRotation;
+
+        bool input = false;
 
         void Start()
         {
@@ -18,13 +20,18 @@ namespace Assets.Scripts
         
         void FixedUpdate()
         {
-//            if( Input.GetAxis( "Right Stick Horizontal" ) != 0f || Input.GetAxis( "Right Stick Vertical" ) != 0f )
-//                controllerInput = true;
-//            else if( Input.GetAxis( "Mouse Y" ) != 0f || Input.GetAxis( "Mouse X" ) != 0f )
-//                controllerInput = false;
+            if( Input.GetAxis( "Right Stick Horizontal" ) != 0f || Input.GetAxis( "Right Stick Vertical" ) != 0f )
+                input = true;
+            else if( Input.GetMouseButton( 1 ) && Input.GetAxis( "Mouse Y" ) != 0f || Input.GetAxis( "Mouse X" ) != 0f )
+                input = true;
 
-            Camera.main.transform.eulerAngles = new Vector3( Camera.main.transform.eulerAngles.x + transform.eulerAngles.x, 
-            Camera.main.transform.eulerAngles.y + transform.eulerAngles.y, Camera.main.transform.eulerAngles.z + transform.eulerAngles.z );
+
+
+            if( !input ) 
+            {
+                oldRotation = transform.eulerAngles;
+                Camera.main.transform.eulerAngles = oldRotation;
+            }
 
             Rotate();
         }

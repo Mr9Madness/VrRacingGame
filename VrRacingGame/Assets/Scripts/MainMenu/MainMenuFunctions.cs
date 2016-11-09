@@ -36,7 +36,8 @@ namespace MainMenu
 
                 socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
 
-                SceneManager.LoadScene("main");
+                PlayerPrefs.SetString( "IP", targetText.text );
+                SceneManager.LoadScene("ServerScreen");
             }
             catch( Exception ex )
             {
