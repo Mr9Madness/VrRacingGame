@@ -15,63 +15,41 @@ namespace Client {
         private static int Port = 25001;
 
         static void Main(string[] args) {
-            while (true) {
-                Console.Clear();
+            SetOptions();
 
-                SetOptions();
+            Console.WriteLine("=================== Virtual Reality Racing Game client ===================\n");
 
-                char ans;
+            Client.Connect(Ip, Port);
+            while (Client.Socket != null && Client.Socket.Connected) {
+                if (!Client.Connected) continue;
 
-                while (true) {
-                    Console.WriteLine("=================== Virtual Reality Racing Game client ===================\n");
-
-                    Client.Connect(Ip, Port);
-
-                    while (Client.Socket != null && Client.Socket.Connected) {
-                        if (!Client.Connected) continue;
-
-                        string input = Console.ReadLine();
-                        if (input != null && input.Length > 7 && input.Substring(0,7).Contains("message")) {
-                            Client.SendMessage(
-                                new Packet(
-                                    Client.Username,
-                                    "All",
-                                    VrrgDataCollectionType.Message,
-                                    new[] { "Message", input.Substring(7) }
-                                )
-                            );
-                        }
-
-                        if (input == "disconnect") {
-                            if (!Client.isClosing)
-                                CloseConnection();
-                            break;
-                        }
-
-                        if (input == "exit") {
-                            if (!Client.isClosing)
-                                CloseConnection();
-                            Environment.Exit(0);
-                        }
-                    }
-
-                    Console.WriteLine("Disconnected from server!");
-                    Console.Write("Try to reconnect? (Y/N): ");
-                    ans = Console.ReadKey().KeyChar;
-                    Client.isClosing = false;
-                    Console.Clear();
-
-                    if (ans == 'n' || ans == 'N')
-                        break;
+                string input = Console.ReadLine();
+                if (input != null && input.Length > 7 && input.Substring(0,7).Contains("message")) {
+                    Client.SendMessage(
+                        new Packet(
+                            Client.Username,
+                            "All",
+                            VrrgDataCollectionType.Message,
+                            new[] { "Message", input.Substring(7) }
+                        )
+                    );
                 }
-                Console.Write("Would you like to try to restart the client? (Y/N): ");
-                ans = Console.ReadKey().KeyChar;
-                Client.isClosing = false;
-                Console.Clear();
 
-                if (ans == 'n' || ans == 'N')
+                if (input == "disconnect") {
+                    if (!Client.isClosing)
+                        CloseConnection();
                     break;
+                }
+
+                if (input == "exit") {
+                    if (!Client.isClosing)
+                        CloseConnection();
+                    Environment.Exit(0);
+                }
             }
+
+            Console.Write("Disconnected from server!\nPress any key to continue...");
+            Console.ReadKey();
         }
 
         public static void CloseConnection(string message = "") {
@@ -86,21 +64,12 @@ namespace Client {
                         new[] {"disconnectRequest", "true"}
                     )
                 );
-
-            Console.WriteLine("Pre closed-message1");
-
-            try {
-                Client.ListenToServer.();
-            } catch (Exception ex) {
-                Console.WriteLine("\n" + ex + "\n");
-            }
-
-            Console.WriteLine("Pre closed-message2");
+            
+            
+            Client.ListenToServer.Abort();
             Client.Socket?.Close();
-            Console.WriteLine("Pre closed-message3");
 
             if (message.Trim(' ').Length > 0) Console.WriteLine(message);
-            Console.WriteLine("Closed.");
         }
 
         /// <summary>

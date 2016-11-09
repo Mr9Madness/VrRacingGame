@@ -10,6 +10,8 @@
     <RootNamespace>VrRacingGameDataCollection</RootNamespace>
     <AssemblyName>VrRacingGameDataCollection</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
