@@ -109,7 +109,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1000012334115200
 GameObject:
   m_ObjectHideFlags: 1
@@ -806,6 +806,13 @@ MonoBehaviour:
   _fullTorqueOverAllWheels: 2500
   _brakeTorque: 20000
   _reverseTorque: 500
+  _slipLimit: 0
+  _centreOfMassOffset: {x: 0, y: 0, z: 0}
+  _maximumSteerAngle: 25
+  _maxHandbrakeTorque: 0
+  _downforce: 100
+  _topspeed: 200
+  _revRangeBoundary: 1
 --- !u!114 &114000010966834358
 MonoBehaviour:
   m_ObjectHideFlags: 1

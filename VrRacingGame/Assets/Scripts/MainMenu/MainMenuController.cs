@@ -13,6 +13,7 @@ namespace MainMenu
         
         void Start()
         {
+            Debug.Log(System.Environment.Version);
 
             Resolution[] supportedResolutions = Screen.resolutions;
 
