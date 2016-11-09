@@ -33,6 +33,7 @@ namespace Server {
 
         public static void CloseClient(Client client) {
             if (client == null) return;
+            client.isClosing = true;
 
             if (client.Socket.Connected)
                 SendMessage(
@@ -45,10 +46,14 @@ namespace Server {
                     )
                 );
 
-            client.ListenToClient.Abort();
+            Console.WriteLine("Test1");
+
+            client.AbortListen();
+            Console.WriteLine("Test2");
 
             while (client.Socket.Connected) client.Socket.Close();
             ClientList.Remove(client.Username);
+            Console.WriteLine("Test3");
 
             if (ClientList.ContainsKey(client.Username.ToLower()))
                 ClientList.Remove(client.Username.ToLower());
@@ -108,7 +113,9 @@ namespace Server {
                 catch (Exception ex) {
                     if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
 
-                    if (client != null) CloseClient(client);
+                    if (client != null)
+                        if (!client.isClosing)
+                            CloseClient(client);
                     break;
                 }
             }
