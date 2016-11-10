@@ -33,6 +33,7 @@ namespace Server {
 
         public static void CloseClient(Client client) {
             if (client == null) return;
+            client.isClosing = true;
 
             if (client.Socket.Connected)
                 SendMessage(
@@ -45,15 +46,29 @@ namespace Server {
                     )
                 );
 
-            client.ListenToClient.Abort();
+            Console.WriteLine("Test1");
+
+            client.AbortListen();
+            Console.WriteLine("Test2");
 
             while (client.Socket.Connected) client.Socket.Close();
             ClientList.Remove(client.Username);
+            Console.WriteLine("Test3");
 
             if (ClientList.ContainsKey(client.Username.ToLower()))
                 ClientList.Remove(client.Username.ToLower());
 
             Console.WriteLine(client.Username + " has left the server.");
+
+            Broadcast(
+                new Packet(
+                    "Server",
+                    "All",
+                    VrrgDataCollectionType.Command,
+                    new[] { "clientList", string.Join("\\3\\", new List<string>(ClientList.Keys).ToArray()) }
+                )
+            );
+
             client = null;
         }
 
@@ -65,7 +80,7 @@ namespace Server {
 
             Console.WriteLine("Starting server on " + Ip + ":" + Port);
             Console.WriteLine("Server name: " + ServerName);
-            Console.WriteLine("Password: " + Password);
+            Console.WriteLine(Password == "" ? "Password not set." : "Password: " + Password);
 
             try {
                 Listener = new TcpListener(IPAddress.Parse(Ip), Port);
@@ -92,11 +107,15 @@ namespace Server {
             while (true) {
                 Client client = null;
 
-                try { client = new Client(Listener.AcceptTcpClient()); }
+                try {
+                    client = new Client(Listener.AcceptTcpClient());
+                }
                 catch (Exception ex) {
                     if (!ex.ToString().Contains("actively refused")) Console.WriteLine("\n" + ex + "\n");
 
-                    if (client != null) CloseClient(client);
+                    if (client != null)
+                        if (!client.isClosing)
+                            CloseClient(client);
                     break;
                 }
             }
@@ -228,7 +247,7 @@ namespace Server {
                     case "exit": case "quit": case "close": case "stop":
                         CloseServer();
                         break;
-                    case "newclient":
+                    case "nc": case "newclient":
                         Process.Start(@"Client.exe");
                         break;
                 }
@@ -265,6 +284,8 @@ namespace Server {
 		/// <param name="packet">The packet to broadcast</param>
         public static void Broadcast (Packet packet) {
             try {
+                if (ClientList.Count == 0) throw new Exception("No clients connected.");
+
                 foreach (KeyValuePair<string, Client> pair in ClientList) {
                     try {
                         SendMessage(pair.Value, packet, false);
@@ -278,8 +299,11 @@ namespace Server {
                         CloseClient(pair.Value);
                     }
                 }
-            } catch (Exception) {
-                // ignored
+            } catch (Exception ex) {
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("valid Vrrg Packet") &&
+                    !ex.ToString().Contains("connection was aborted"))
+                    Console.WriteLine("\n" + ex + "\n");
             }
         }
 
@@ -290,11 +314,12 @@ namespace Server {
 			int optionCount = 0;
 
             while (optionCount < 4) {
-                Console.WriteLine("=================== Virtual Reality Racing Game server ===================");
-
                 switch (optionCount) {
                     default:
-                        Console.WriteLine("Option (" + optionCount + ") does not exist");
+                        Console.WriteLine("Option (" + optionCount + ") does not exist.\nPress any key to continue...");
+                        Console.ReadKey();
+                        Environment.Exit(0);
+
                         break;
                     case 0: // Set IP address and Port
                         Console.Write("IP (press ENTER to bind all available): ");
@@ -310,7 +335,7 @@ namespace Server {
                                     Port = Convert.ToInt16(temp[1]);
                                 } catch (Exception) {
                                     Console.Clear();
-                                    Console.WriteLine("\nInvalid Port \"" + temp[1] + "\".");
+                                    Console.WriteLine("Invalid Port \"" + temp[1] + "\".");
 
                                     continue;
                                 }
@@ -321,23 +346,34 @@ namespace Server {
                         IPAddress garbage;
                         if (IPAddress.TryParse(Ip, out garbage)) optionCount++;
                         else {
-                            Console.WriteLine("\nInvalid IP Address \"" + Ip + "\". Press enter to retry.");
-                            Console.ReadLine();
+                            Console.Clear();
+                            Console.WriteLine("Invalid IP Address \"" + Ip + "\".");
+
+                            continue;
                         }
                         break;
 					case 1: // Set servername.
 						Console.Write("Server name: ");
 
-						try
-						{
+						try {
 							ServerName = Console.ReadLine();
 
-							if (ServerName != null && ServerName.Length < 32) optionCount++;
-							else {
-								Console.WriteLine("Server name too long (Max nr of characters is 32). Press enter to retry.");
-								Console.ReadLine();
-							}
-						}
+							if (ServerName != null && ServerName.Length < 3) {
+                                Console.Clear();
+                                Console.WriteLine("Server name too short (Min nr of characters is 3).");
+
+                                continue;
+                            }
+
+                            if (ServerName.Length > 32) {
+						        Console.Clear();
+								Console.WriteLine("Server name too long (Max nr of characters is 32).");
+
+                                continue;
+                            }
+
+                            optionCount++;
+                        }
 						catch (Exception) { 
                             // ignored
                         }
@@ -368,9 +404,10 @@ namespace Server {
 
 							if (Password != null && Password.Length < 32) optionCount++;
 							else {
-                                Console.WriteLine(
-                                    "Password too long (Max nr of characters is 32). Press enter to retry.");
-								Console.ReadLine();
+                                Console.Clear();
+                                Console.WriteLine("Password too long (Max nr of characters is 32).");
+
+                                continue;
 							}
 						} catch (Exception) {
 						    // ignored

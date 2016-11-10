@@ -10,8 +10,10 @@ namespace Server {
     class Client {
         private const int MAXBUFFERSIZE = 256;
         public string Username;
+        public bool isClosing = false;
         public TcpClient Socket;
         public Thread ListenToClient;
+        private NetworkStream receiveStream;
 
         public Client(TcpClient socket) {
             Console.WriteLine("New connection request.");
@@ -22,10 +24,10 @@ namespace Server {
 
         private Packet ReceiveMessage(bool logMessage = false) {
             try {
-                NetworkStream getStream = Socket.GetStream();
+                receiveStream = Socket.GetStream();
                 byte[] buffer = new byte[MAXBUFFERSIZE];
 
-                int readCount = getStream.Read(buffer, 0, buffer.Length);
+                int readCount = receiveStream.Read(buffer, 0, buffer.Length);
                 List<byte> actualRead = new List<byte>(buffer).GetRange(0, readCount);
 
 				if (logMessage) Console.WriteLine(Username + " > Server: " + Encoding.ASCII.GetString(actualRead.ToArray()));
@@ -36,7 +38,7 @@ namespace Server {
                     !ex.ToString().Contains("connection was aborted"))
                     Console.WriteLine("\"" + ex + "\"");
                 
-                Program.CloseClient(this);
+                if (!isClosing) Program.CloseClient(this);
             }
             return null;
         }
@@ -52,11 +54,33 @@ namespace Server {
                 Packet packet = ReceiveMessage();
                 if (packet == new Packet()) break;
 
-                if (packet.Type != VrrgDataCollectionType.Command)
+                if (packet.Type != VrrgDataCollectionType.Command) {
                     Program.Broadcast(packet);
-            }
+                    continue;
+                }
 
-            Program.CloseClient(this);
+                if (packet.Variables.Count == 0) continue;
+                foreach (KeyValuePair<string, string> variable in packet.Variables) {
+                    switch (variable.Key) {
+                        default:
+                            Console.WriteLine("WARNING: Unhandled variable in Vrrg Command Packet: \"" + variable.Key + "\"");
+                            break;
+                        case "disconnectRequest":
+                            if (!isClosing)
+                                Program.CloseClient(this);
+                            break;
+                    }
+                }
+            }
+            if (!isClosing)
+                Program.CloseClient(this);
+        }
+
+        public void AbortListen() {
+            receiveStream.Close();
+            Console.WriteLine("Hallo1");
+            ListenToClient.Abort();
+            Console.WriteLine("Hallo2");
         }
 
         private void CheckNewClientInfo() {
@@ -95,8 +119,7 @@ namespace Server {
                 variables = new [] {
                     "usernameAvailable", isAccepted, "passwordRequired", "false",
                     "serverName", Program.ServerName,
-                    "maxPlayers", Program.MaxPlayers.ToString(),
-                    "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper))
+                    "maxPlayers", Program.MaxPlayers.ToString()
                 };
             }
 
@@ -109,6 +132,16 @@ namespace Server {
 					variables
 				)
 			);
+
+            if (Program.ClientList.Count > 0)
+                Program.Broadcast(
+                    new Packet(
+                        "Server",
+                        "All",
+                        VrrgDataCollectionType.Command,
+                        new[] { "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper)) }
+                    )
+                );
 
             if (isAccepted == "true") return;
 
@@ -134,13 +167,22 @@ namespace Server {
                             VrrgDataCollectionType.Command,
                             new[] { "passwordAccepted", isAccepted,
                                 "serverName", Program.ServerName,
-                                "maxPlayers", Program.MaxPlayers.ToString(),
-                                "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray())
+                                "maxPlayers", Program.MaxPlayers.ToString()
                             }
                         )
                     );
                 } else Console.WriteLine("Received packet does not meet expectations of a Password-packet.");
             }
+
+            if (Program.ClientList.Count > 0)
+                Program.Broadcast(
+                    new Packet(
+                        "Server",
+                        "All",
+                        VrrgDataCollectionType.Command,
+                        new[] { "clientList", string.Join("\\3\\", new List<string>(Program.ClientList.Keys).ToArray().Select(FirstCharToUpper)) }
+                    )
+                );
         }
     }
 }

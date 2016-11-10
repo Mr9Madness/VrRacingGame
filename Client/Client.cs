@@ -75,8 +75,8 @@ namespace Client {
 					Console.WriteLine(Username + " > Server: " + packet);
 			}
 			catch (Exception ex) {
-                if (!ex.ToString().Contains("Thread was being aborted") &&
-                    !ex.ToString().Contains("disposed object"))
+                if (!ex.ToString().Contains("actively refused") &&
+                    !ex.ToString().Contains("forcibly closed"))
                     Console.WriteLine("\n" + ex + "\n");
 
                 if (!isClosing)
@@ -192,7 +192,7 @@ namespace Client {
 
                 string message = Encoding.ASCII.GetString(actualRead.ToArray());
                 if (logMessage)
-                    Console.WriteLine(message);
+                    Console.WriteLine("Server > " + Username + ": " + message);
                 return message;
             } catch (Exception ex) {
                 if (!ex.ToString().Contains("forcibly closed") &&

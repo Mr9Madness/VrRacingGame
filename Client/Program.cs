@@ -35,6 +35,13 @@ namespace Client {
                     );
                 }
 
+                if (input == "ls" || input == "list") {
+                    Console.WriteLine("Connected clients:\n");
+
+                    foreach (string username in Server.ClientList)
+                        Console.WriteLine(username);
+                }
+
                 if (input == "disconnect") {
                     if (!Client.isClosing)
                         CloseConnection();
@@ -81,22 +88,22 @@ namespace Client {
             while (optionCount < 2) {
                 switch (optionCount) {
                     default:
-                        Console.Write("Option (" + optionCount + ") does not exist.\nThe program will now close.");
-                        Console.ReadLine();
+                        Console.Write("Option (" + optionCount + ") does not exist.\nPress any key to continue...");
+                        Console.ReadKey();
                         Environment.Exit(0);
                         break;
                     case 0: // Set max players.
                         Console.Write("Username (3 - 32 characters): ");
                         string username = Console.ReadLine()?.Trim(' ') ?? "";
 
-                        if (username?.Length < 3) {
+                        if (username.Length < 3) {
                             Console.Clear();
 
                             Console.WriteLine("The username \"" + username + "\" is too short, minimal length is 3 characters.");
                             continue;
                         }
 
-                        if (username?.Length > 32) {
+                        if (username.Length > 32) {
                             string temp = "";
                             for (int i = 0; i < 32; i++)
                                 temp += username[i];
@@ -120,7 +127,7 @@ namespace Client {
 
                                 try { Port = Convert.ToInt16(temp[1]); } catch (Exception) {
                                     Console.Clear();
-                                    Console.WriteLine("\nInvalid port \"" + temp[1] + "\".");
+                                    Console.WriteLine("Invalid port \"" + temp[1] + "\".");
 
                                     continue;
                                 }
@@ -135,7 +142,7 @@ namespace Client {
                             optionCount++;
                         else {
                             Console.Clear();
-                            Console.WriteLine("\nInvalid IP Address \"" + Ip + "\".");
+                            Console.WriteLine("Invalid IP Address \"" + Ip + "\".");
                         }
                         break;
                 }
