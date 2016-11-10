@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor( typeof( TileMap ) )]
+[CustomEditor( typeof( Game.TileMap ) )]
 public class LevelGen : Editor {
 
     public override void OnInspectorGUI()
@@ -10,12 +10,12 @@ public class LevelGen : Editor {
 
         if ( GUILayout.Button( "ReLoad" ) )
         {
-            TileMap map = ( TileMap )target;
+            Game.TileMap map = ( Game.TileMap )target;
             map.InitLevel();
         }
         if( GUILayout.Button( "Empty" ) )
         {
-            TileMap map = ( TileMap ) target;
+            Game.TileMap map = ( Game.TileMap ) target;
             map.EmptyLevel();
         }
     }

@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
+using System.Net.Sockets;
+
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
-namespace Assets.Scripts
+namespace Game
 {
     internal enum DriveType
     {
@@ -13,26 +15,26 @@ namespace Assets.Scripts
     public class CarController : MonoBehaviour
     {
         /// <summary>
-        /// Index to position = 0 Left back, 1 Left front, 2 Right back, 3 Right front
+        /// Index to position = 0 Right Front, 1 Left Front, 2 Right Back, 3 Left Back
         /// </summary>
         [ SerializeField ] private MeshRenderer[] _wheelMeshes = new MeshRenderer[ 4 ];
 
         /// <summary>
-        /// Index to position = 0 Left back, 1 Left front, 2 Right back, 3 Right front
+        /// Index to position = 0 Right Front, 1 Left Front, 2 Right Back, 3 Left Back
         /// </summary>
-        [SerializeField ] private WheelCollider[] _wheelColliders = new WheelCollider[ 4 ];
+        [ SerializeField ] private WheelCollider[] _wheelColliders = new WheelCollider[ 4 ];
 
         [ SerializeField ] private float _fullTorqueOverAllWheels;
         [ SerializeField ] private float _brakeTorque;
         [ SerializeField ] private float _reverseTorque;
         [ SerializeField ] private float _slipLimit;
-        [SerializeField] private Vector3 _centreOfMassOffset;
-        [SerializeField] private float _maximumSteerAngle;
-        [SerializeField] private float _maxHandbrakeTorque;
-        [SerializeField] private float _downforce = 100f;
-        [SerializeField] private float _topspeed = 200;
-        [SerializeField] private static int NoOfGears = 5;
-        [SerializeField] private float _revRangeBoundary = 1f;
+        [ SerializeField ] private Vector3 _centreOfMassOffset;
+        [ SerializeField ] private float _maximumSteerAngle;
+        [ SerializeField ] private float _maxHandbrakeTorque;
+        [ SerializeField ] private float _downforce = 100f;
+        [ SerializeField ] private float _topspeed = 200;
+        [ SerializeField ] private static int NoOfGears = 5;
+        [ SerializeField ] private float _revRangeBoundary = 1f;
 
         public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
 
@@ -63,7 +65,6 @@ namespace Assets.Scripts
         public float Revs { get; private set; }
         public float AccelInput { get; private set; }
 
-
         void Start()
         {
             _wheelMeshLocalRotation = new Quaternion[ 4 ];
@@ -90,7 +91,7 @@ namespace Assets.Scripts
         private void LoadSettings()
         {
             _tractionControl = PlayerPrefs.GetFloat( "TractionControll", 1 );
-            _driveType = ( DriveType )PlayerPrefs.GetInt( "DriveType", 1 );
+            _driveType = ( DriveType )PlayerPrefs.GetInt( "DriveType", 2 );
 
         }
 
@@ -102,7 +103,7 @@ namespace Assets.Scripts
                 Vector3 position;
                 _wheelColliders[ i ].GetWorldPose( out position, out quat );
                 _wheelMeshes[ i ].transform.position = position;
-                _wheelMeshes[ i ].transform.rotation = quat;
+                _wheelMeshes[ i ].transform.rotation = quat * Quaternion.Euler( 0, 0, 90 );
             }
 
             steeringValue = Mathf.Clamp( steeringValue, -1, 1 );
@@ -132,30 +133,31 @@ namespace Assets.Scripts
             WheelHit wheelHit;
             switch (_driveType)
             {
-            case DriveType.FourWheelDrive:
-                // loop through all wheels
-                for (int i = 0; i < 4; i++)
-                {
-                    _wheelColliders[i].GetGroundHit(out wheelHit);
+                case DriveType.FourWheelDrive:
 
-                    AdjustTorque(wheelHit.forwardSlip);
-                }
+                    for (int i = 0; i < 4; i++)
+                    {
+                        _wheelColliders[ i ].GetGroundHit( out wheelHit );
+
+                        AdjustTorque( wheelHit.forwardSlip );
+                    }
                 break;
 
-            case DriveType.RearWheelDrive:
-                _wheelColliders[2].GetGroundHit(out wheelHit);
-                AdjustTorque(wheelHit.forwardSlip);
+                case DriveType.RearWheelDrive:
 
-                _wheelColliders[3].GetGroundHit(out wheelHit);
-                AdjustTorque(wheelHit.forwardSlip);
+                    _wheelColliders[ 2 ].GetGroundHit( out wheelHit );
+                    AdjustTorque( wheelHit.forwardSlip );
+
+                    _wheelColliders[ 3 ].GetGroundHit( out wheelHit );
+                    AdjustTorque( wheelHit.forwardSlip );
                 break;
 
-            case DriveType.FrontWheelDrive:
-                _wheelColliders[0].GetGroundHit(out wheelHit);
-                AdjustTorque(wheelHit.forwardSlip);
+                case DriveType.FrontWheelDrive:
+                    _wheelColliders[ 0 ].GetGroundHit( out wheelHit );
+                    AdjustTorque( wheelHit.forwardSlip );
 
-                _wheelColliders[1].GetGroundHit(out wheelHit);
-                AdjustTorque(wheelHit.forwardSlip);
+                    _wheelColliders[ 1 ].GetGroundHit( out wheelHit );
+                    AdjustTorque( wheelHit.forwardSlip );
                 break;
             }
         }
@@ -207,34 +209,43 @@ namespace Assets.Scripts
 
         private void ApplyDrive( float accel, float footbrake )
         {
-
-
             float thrustTorque;
             switch( _driveType )
             {
                 case DriveType.FourWheelDrive:
-                    thrustTorque = accel * ( _currentTorque / 4f );
-                Debug.Log( _currentTorque );
-                   
-                    for( int i = 0; i < 4; i++ )
-                    {
-                        _wheelColliders[ i ].motorTorque = thrustTorque;
-                    }
-                    break;
+                
+                thrustTorque = accel * ( _currentTorque / 4f );
+
+//                Debug.Log( "accel " + accel );
+//                Debug.Log( "_currentTorque " + _currentTorque );
+//                Debug.Log( "thrustTorque " + thrustTorque );
+               
+                for( int i = 0; i < 4; i++ )
+                {
+                    _wheelColliders[ i ].motorTorque = thrustTorque;
+                }
+                break;
 
                 case DriveType.FrontWheelDrive:
                     
-                    thrustTorque = accel * ( _currentTorque / 2f );
-                Debug.Log( _currentTorque );
+                thrustTorque = accel * ( _currentTorque / 2f );
 
-                    _wheelColliders[ 0 ].motorTorque = _wheelColliders[ 1 ].motorTorque = thrustTorque;
-                    break;
+//                Debug.Log( "accel " + accel );
+//                Debug.Log( "_currentTorque " + _currentTorque );
+//                Debug.Log( "thrustTorque " + thrustTorque );
+
+                _wheelColliders[ 0 ].motorTorque = _wheelColliders[ 1 ].motorTorque = thrustTorque;
+                break;
 
                 case DriveType.RearWheelDrive:
-                    thrustTorque = accel * ( _currentTorque / 2f );
+                thrustTorque = accel * ( _currentTorque / 2f );
 
-                    _wheelColliders[ 2 ].motorTorque = _wheelColliders[ 3 ].motorTorque = thrustTorque;
-                    break;
+//                Debug.Log( "accel " + accel );
+//                Debug.Log( "_currentTorque " + _currentTorque );
+//                Debug.Log( "thrustTorque " + thrustTorque );
+
+                _wheelColliders[ 2 ].motorTorque = _wheelColliders[ 3 ].motorTorque = thrustTorque;
+                break;
 
             }
 
@@ -251,6 +262,14 @@ namespace Assets.Scripts
                 }
             }
         }
+
+    }
+
+    public static class PlayerData
+    {
+        public static TcpClient Socket = new TcpClient();
+        public static string UserName = "";
+
 
     }
 }

@@ -1,47 +1,51 @@
 ﻿using System;
 using UnityEngine;
 
-public class TileMap : MonoBehaviour
+namespace Game
 {
-    private Data.LevelData _tileData;
 
-    public GameObject[] Trackparts;
-    public Transform TrackContainer;
-
-    public string MapName;
-
-    void Start()
-    {        
-        InitLevel();
-    }
-
-    public void InitLevel()
+    public class TileMap : MonoBehaviour
     {
-        _tileData = Data.LevelData.CreateFromJson( MapName );
+        private Data.LevelData _tileData;
 
-        if ( TrackContainer == null )
-            TrackContainer = new GameObject( "Track" ).transform;
+        public GameObject[] Trackparts;
+        public Transform TrackContainer;
 
-        EmptyLevel();
+        public string MapName;
 
-        for( int x = 0; x < _tileData.LevelWidth; x++ )
+        void Start()
+        {        
+            InitLevel();
+        }
+
+        public void InitLevel()
         {
-            for ( int y = 0; y < _tileData.LevelHeight; y++ )
+            _tileData = Data.LevelData.CreateFromJson( MapName );
+
+            if ( TrackContainer == null )
+                TrackContainer = new GameObject( "Track" ).transform;
+
+            EmptyLevel();
+
+            for( int x = 0; x < _tileData.LevelWidth; x++ )
             {
-                int tileValue = _tileData.GetTile( x, y );
-                Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
+                for ( int y = 0; y < _tileData.LevelHeight; y++ )
+                {
+                    int tileValue = _tileData.GetTile( x, y );
+                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
+                }
             }
         }
-    }
 
-    public void EmptyLevel()
-    {
-        if( TrackContainer == null ) return;
-        if( TrackContainer.childCount <= 0 ) return;
+        public void EmptyLevel()
+        {
+            if( TrackContainer == null ) return;
+            if( TrackContainer.childCount <= 0 ) return;
 
-        while( TrackContainer.childCount > 0 )
-            foreach( Transform child in TrackContainer )
-                DestroyImmediate( child.gameObject );
-        
+            while( TrackContainer.childCount > 0 )
+                foreach( Transform child in TrackContainer )
+                    DestroyImmediate( child.gameObject );
+            
+        }
     }
 }

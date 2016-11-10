@@ -41,8 +41,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="VrRacingGameDataCollection, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="VrRacingGameDataCollection">
       <HintPath>..\bin\VrRacingGameDataCollection.dll</HintPath>
     </Reference>
   </ItemGroup>

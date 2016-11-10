@@ -806,7 +806,7 @@ MonoBehaviour:
   _fullTorqueOverAllWheels: 2500
   _brakeTorque: 20000
   _reverseTorque: 500
-  _slipLimit: 0
+  _slipLimit: 0.3
   _centreOfMassOffset: {x: 0, y: 0, z: 0}
   _maximumSteerAngle: 25
   _maxHandbrakeTorque: 0

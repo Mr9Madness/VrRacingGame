@@ -44,8 +44,10 @@ namespace Client {
 						new [] { "username", Username }
                		)
 	            );
-                
-                ListenToServer = new Thread(Listen);
+                if (!HandlePassword())
+					return;
+
+				ListenToServer = new Thread(Listen);
                 ListenToServer.Start();
             } catch (Exception ex) {
                 if (ex.ToString().Contains("actively refused"))
@@ -140,8 +142,6 @@ namespace Client {
 
         private static void Listen() {
 			try {
-                if (!HandlePassword())
-                    return;
 
 				while (Socket.Connected && !isClosing)
 				{
