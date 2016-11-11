@@ -18,6 +18,11 @@ namespace Data
             return Level[ x + LevelWidth * y ];
         }
 
+        public void SetTile( int x, int y, int value )
+        {
+            Level[ x + LevelWidth * y ] = value;
+        }
+
         /// <summary>
         /// Converts the json file of the given level name to the <see cref="LevelData"/> struct so it can be used.
         /// </summary>
@@ -25,8 +30,22 @@ namespace Data
         /// <returns>The <see cref="LevelData"/> struct thats filled with the data from the given level name. </returns>
         public static LevelData CreateFromJson( string levelName )
         {
-            string json = File.ReadAllText( @"Assets\Data\level\" + levelName + ".json" );
-            return JsonUtility.FromJson< LevelData >( json );
+            //string json = File.ReadAllText( @"Assets\Data\level\" + levelName + ".json" );
+            TextAsset loaded = Resources.Load( levelName ) as TextAsset;
+            if( loaded != null )
+            {
+                Debug.Log( loaded );
+                return JsonUtility.FromJson< LevelData >( loaded.text );
+            }
+            string loadedString = File.ReadAllText( Application.dataPath + @"\Data\level\" + levelName + ".json" );
+
+            if( loadedString != null )
+            {                          
+                Debug.Log( loadedString );
+
+                return JsonUtility.FromJson< LevelData >( loadedString );
+            }
+            return null;
          }
         /// <summary>
         /// Dumps <see cref="LevelData"/> into a json file thats in the 'Assets/Data/level' folder 
@@ -36,7 +55,13 @@ namespace Data
         public static void ToJsonFile( string fileName, object levelData )
         {
             string json = JsonUtility.ToJson( levelData );
-            File.WriteAllText( @"Assets\Data\level\" + fileName + ".json", json );
+            Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
+
+#if UNITY_EDITOR
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
+#else
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
+#endif
         }
     }
 }

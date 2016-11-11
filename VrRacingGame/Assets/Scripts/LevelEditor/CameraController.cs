@@ -7,18 +7,38 @@ namespace LevelEditor
 	{
 		public float Speed = 500f;
 		public float MouseSensitivity = 1.5f;
-		private Rigidbody _rigidbody;
+        public GameObject PauseMenu;
 
+		private Rigidbody _rigidbody;
 		private float _yaw = 45;
 		private float _pitch = 0;
+
+        bool isPaused;
 
 		void Start()
 		{
 			_rigidbody = GetComponent< Rigidbody >();
 		}
 
-		void FixedUpdate()
-		{
+		void Update()
+        {        
+            if( Input.GetKeyDown( KeyCode.Escape ) ) 
+                PauseMenu.SetActive( PauseMenu.activeSelf ? false : true );
+
+            if( PauseMenu.activeSelf )
+            {
+                isPaused = true;
+                PauseMenu.SetActive( isPaused );
+                Time.timeScale = 0f;
+            }
+            else
+            {
+                isPaused = false;
+                PauseMenu.SetActive( isPaused );
+                Time.timeScale = 1f;
+            }
+            if( isPaused ) return;
+
 			float horizontal = Input.GetAxis( "Horizontal" );
 			float vertical = Input.GetAxis( "Vertical" );
 
@@ -32,9 +52,10 @@ namespace LevelEditor
 
                 if( Physics.Raycast( mouseRay, out mouseRayHit, Mathf.Infinity ) )
                 {
-                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x ) / 32, 0, Mathf.FloorToInt( mouseRayHit.point.y ) / 32 );
-//                    Debug.Log( mousePos );
-//                    Debug.Log( mouseRayHit.point );
+                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x ) / 32, 0, Mathf.FloorToInt( mouseRayHit.point.z ) / 32 );
+                    ObjectSpawn.SpawnObject( mousePos, 0 );
+                    LevelEditor.TileMap._tileData.SetTile( Mathf.RoundToInt( mousePos.x ),  Mathf.RoundToInt( mousePos.y ), 0 );
+                    Debug.Log( mousePos );
                 }
             }
 

@@ -41,7 +41,7 @@ namespace MainMenu
             }
             catch( Exception ex )
             {
-                Debug.Log( ex );
+                MainMenuController.ConnectError.CreateBox( ex.GetBaseException().ToString() );
             }
         }
 
