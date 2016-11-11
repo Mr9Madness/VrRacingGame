@@ -44,13 +44,13 @@ namespace Client {
 
                 if (input == "disconnect") {
                     if (!Client.isClosing)
-                        CloseConnection();
+                        CloseConnection("Disconnect requested by client.");
                     break;
                 }
 
                 if (input == "exit") {
                     if (!Client.isClosing)
-                        CloseConnection();
+                        CloseConnection("Disconnect requested by client.");
                     Environment.Exit(0);
                 }
             }
@@ -59,24 +59,31 @@ namespace Client {
             Console.ReadKey();
         }
 
-        public static void CloseConnection(string message = "") {
-            Client.isClosing = true;
+        public static void CloseConnection(string message = "", bool safeDisconnect = true) {
+            try {
+                Client.isClosing = true;
 
-            if (Client.Socket != null && Client.Socket.Connected)
-                Client.SendMessage(
-                    new Packet(
-                        Client.Username,
-                        "Server",
-                        VrrgDataCollectionType.Command,
-                        new[] {"disconnectRequest", "true"}
-                    )
-                );
-            
-            
-            Client.ListenToServer.Abort();
-            Client.Socket?.Close();
+                if (Client.Socket != null && Client.Socket.Connected && safeDisconnect)
+                    Client.SendMessage(
+                        new Packet(
+                            Client.Username,
+                            "Server",
+                            VrrgDataCollectionType.Command,
+                            new[] {"disconnectRequest", "true"}
+                        )
+                    );
 
-            if (message.Trim(' ').Length > 0) Console.WriteLine(message);
+                Console.WriteLine("Test1");
+
+                Client.ListenToServer = null;
+                Console.WriteLine("Test2");
+                Client.Socket?.Close();
+                Console.WriteLine("Test3");
+
+                if (message.Trim(' ').Length > 0) Console.WriteLine(message);
+            } catch (Exception ex) {
+                Console.WriteLine("\n" + ex + "\n");
+            }
         }
 
         /// <summary>
