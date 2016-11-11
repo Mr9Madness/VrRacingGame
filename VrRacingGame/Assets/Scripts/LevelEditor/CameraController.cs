@@ -10,7 +10,7 @@ namespace LevelEditor
         public GameObject PauseMenu;
 
 		private Rigidbody _rigidbody;
-		private float _yaw = 45;
+		private float _yaw = 0;
 		private float _pitch = 0;
 
         bool isPaused;
@@ -70,11 +70,14 @@ namespace LevelEditor
 
 		void Rotate()
 		{
-			_yaw += MouseSensitivity * Input.GetAxis( "Mouse Y" ) * Time.deltaTime;
-			_pitch -= MouseSensitivity * Input.GetAxis( "Mouse X" ) * Time.deltaTime;
+			_yaw += MouseSensitivity * ( Input.GetAxis( "Right Stick Vertical" ) * MouseSensitivity + ( Input.GetMouseButton( 1 ) ? 
+				Input.GetAxis( "Mouse Y" ) * MouseSensitivity * Time.deltaTime : 0 )   );
 
-            transform.eulerAngles = new Vector3( transform.eulerAngles.x, _pitch );
-            Camera.main.transform.eulerAngles = new Vector3( _yaw, transform.eulerAngles.y );
+			_pitch -= ( Input.GetAxis( "Right Stick Horizontal" ) * MouseSensitivity + ( Input.GetMouseButton( 1 ) ? 
+				Input.GetAxis( "Mouse X" ) * MouseSensitivity * Time.deltaTime : 0 ) );
+
+			transform.eulerAngles = new Vector3 (transform.eulerAngles.x, _pitch);
+			Camera.main.transform.eulerAngles = new Vector3 (_yaw, transform.eulerAngles.y);
 		}
 	}
 }
