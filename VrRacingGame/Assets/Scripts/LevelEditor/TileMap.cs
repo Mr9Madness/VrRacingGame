@@ -5,7 +5,7 @@ namespace LevelEditor
 {
 	public class TileMap : MonoBehaviour
 	{
-        private Data.LevelData _tileData;
+        public static Data.LevelData _tileData;
 
 		public GameObject[] Trackparts;
 		public Transform TrackContainer;
@@ -15,10 +15,11 @@ namespace LevelEditor
         void Start()
         {
             _tileData = new Data.LevelData();
+            InitLevel();
         }
 
 		public void InitLevel()
-		{
+        {                        
 			_tileData = Data.LevelData.CreateFromJson( MapName );
 
 			if ( TrackContainer == null )

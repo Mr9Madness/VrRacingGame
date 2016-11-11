@@ -46,13 +46,15 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Editor\LevelGen.cs" />
+     <Compile Include="Assets\Editor\LevelGenEditor.cs" />
      <Compile Include="Assets\OVR\Editor\OVRBuild.cs" />
      <Compile Include="Assets\OVR\Editor\OVRMoonlightLoader.cs" />
      <Compile Include="Assets\OVR\Editor\OVRScreenshotWizard.cs" />
      <None Include="Assets\OVR\Shaders\OVRColorRampAlpha.shader" />
      <None Include="Assets\OVR\Shaders\Unlit Crosshair.shader" />
      <None Include="Assets\OVR\Resources\Unlit Transparent Color.shader" />
-     <None Include="Assets\Data\level\level1.json" />
+     <None Include="Assets\Data\level\test.json" />
+     <None Include="Assets\Resources\level1.json" />
  <Reference Include="UnityEditor.Advertisements">
  <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Advertisements/Editor/UnityEditor.Advertisements.dll</HintPath>
  </Reference>

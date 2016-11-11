@@ -78,6 +78,7 @@
      <Compile Include="Assets\Scripts\Data\Client.cs" />
      <Compile Include="Assets\Scripts\Data\LevelData.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\CameraController.cs" />
+     <Compile Include="Assets\Scripts\LevelEditor\ObjectSpawn.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\TileMap.cs" />
      <Compile Include="Assets\Scripts\MainMenu\MainMenuController.cs" />
      <Compile Include="Assets\Scripts\MainMenu\MainMenuFunctions.cs" />
@@ -89,7 +90,8 @@
      <None Include="Assets\OVR\Shaders\OVRColorRampAlpha.shader" />
      <None Include="Assets\OVR\Shaders\Unlit Crosshair.shader" />
      <None Include="Assets\OVR\Resources\Unlit Transparent Color.shader" />
-     <None Include="Assets\Data\level\level1.json" />
+     <None Include="Assets\Data\level\test.json" />
+     <None Include="Assets\Resources\level1.json" />
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
