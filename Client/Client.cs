@@ -174,7 +174,7 @@ namespace Client {
 					    case VrrgDataCollectionType.MapData:
                             HandlePackets.MapDatas(packet);
                             break;
-						case VrrgDataCollectionType.TransformUpdate:
+						case VrrgDataCollectionType.PlayerUpdate:
                             HandlePackets.TransformUpdates(packet);
                             break;
 					}
