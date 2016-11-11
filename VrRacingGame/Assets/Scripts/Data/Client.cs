@@ -123,7 +123,7 @@ public class Client : MonoBehaviour
             }
         }
 
-        private static string ReceiveMessage( bool logMessage = true )
+        public static string ReceiveMessage( bool logMessage = true )
         {
             try
             {
