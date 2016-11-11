@@ -45,16 +45,9 @@ namespace Server {
                         new [] { "disconnectClient", "true" }
                     )
                 );
-
-            Console.WriteLine("Test1");
-
-            client.AbortListen();
-            Console.WriteLine("Test2");
+            
 
             while (client.Socket.Connected) client.Socket.Close();
-            ClientList.Remove(client.Username);
-            Console.WriteLine("Test3");
-
             if (ClientList.ContainsKey(client.Username.ToLower()))
                 ClientList.Remove(client.Username.ToLower());
 
@@ -174,7 +167,7 @@ namespace Server {
 								"Server", 
 								"ALL", 
 								VrrgDataCollectionType.Message, 
-								new string[] { "broadcastMessage", broadcastMessage }
+								new [] { "broadcastMessage", broadcastMessage }
 							)
 						);
                         break;
@@ -220,19 +213,9 @@ namespace Server {
                         }
                         break;
                     case "kick":
-                        Client c = ClientList[input[2].ToLower()];
-
-                        SendMessage(c,
-                            new Packet(
-                                "Server",
-                                c.Username,
-                                VrrgDataCollectionType.Command,
-                                new [] { "disconnectClient", "true" }
-                            )
-                        );
-
                         if (ClientList.ContainsKey(input[2].ToLower())) {
-                            ClientList.Remove(input[2].ToLower());
+                            Client c = ClientList[input[2].ToLower()];
+                            CloseClient(c);
 
                             if (ClientList.ContainsKey(input[2].ToLower()))
                                 Console.WriteLine("Client \"" + input[2] + "\" could not be kicked.");
@@ -240,9 +223,6 @@ namespace Server {
                                 Console.WriteLine("Client \"" + input[2] + "\" was successfully kicked.");
                         } else
                             Console.WriteLine("Client \"" + input[2] + "\" does not exist.");
-
-						
-
                         break;
                     case "exit": case "quit": case "close": case "stop":
                         CloseServer();
@@ -254,12 +234,13 @@ namespace Server {
             }
         }
 
-		/// <summary>
-		/// Sends an array of bytes to the appointed client.
-		/// </summary>
-		/// <param name="client">The client to receive the packet</param>
-		/// <param name="packet">The packet to be sent to the client</param>
-		public static void SendMessage(Client client, Packet packet, bool logMessage = true) {
+        /// <summary>
+        /// Sends an array of bytes to the appointed client.
+        /// </summary>
+        /// <param name="client">The client to receive the packet</param>
+        /// <param name="packet">The packet to be sent to the client</param>
+		/// <param name="logMessage">Enable or disable message logging in the console</param>
+        public static void SendMessage(Client client, Packet packet, bool logMessage = true) {
 			try {
 				byte[] buffer = Encoding.ASCII.GetBytes(packet.ToString());
 
@@ -267,7 +248,7 @@ namespace Server {
 				sendStream.Write(buffer, 0, buffer.Length);
 
 				if (logMessage)
-					Console.WriteLine("Server > " + client.Username + ": " + packet);
+					Console.WriteLine("Server > " + client.Username != "" ? client.Username : packet.To + ": " + packet);
 			} catch (Exception ex) {
                 if (!ex.ToString().Contains("forcibly closed") &&
                     !ex.ToString().Contains("valid Vrrg Packet") &&
@@ -284,7 +265,10 @@ namespace Server {
 		/// <param name="packet">The packet to broadcast</param>
         public static void Broadcast (Packet packet) {
             try {
-                if (ClientList.Count == 0) throw new Exception("No clients connected.");
+                if (ClientList.Count == 0) {
+                    Console.WriteLine("Could not broadcast: no clients connected.");
+                    return;
+                }
 
                 foreach (KeyValuePair<string, Client> pair in ClientList) {
                     try {

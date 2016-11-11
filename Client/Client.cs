@@ -36,7 +36,14 @@ namespace Client {
                 Socket = new TcpClient();
                 Socket.Connect(Ip, Port);
 
-				SendMessage(
+                Packet packet = new Packet(ReceiveMessage());
+                if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("isServerFull"))
+                    if (packet.Variables["isServerFull"].ToLower() == "true") {
+                        if (!isClosing) Program.CloseConnection("Disconnected from server: Server is full.");
+                        return;
+                    }
+
+                SendMessage(
 					new Packet(
 						Username, 
 						"Server", 

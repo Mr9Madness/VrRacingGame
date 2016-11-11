@@ -16,7 +16,7 @@ namespace Client {
                     case "serverClosed": case "disconnectClient":
                         if (variable.Value == "true")
                             if (!Client.isClosing)
-                                Program.CloseConnection("Disconnected from server.");
+                                Program.CloseConnection("Disconnected from server.", false);
                         break;
                     case "clientList":
                         Console.WriteLine("In CASE");
