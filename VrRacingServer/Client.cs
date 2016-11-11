@@ -33,8 +33,9 @@ namespace Server {
 				if (logMessage) Console.WriteLine(Username + " > Server: " + Encoding.ASCII.GetString(actualRead.ToArray()));
 				return new Packet(Encoding.ASCII.GetString(actualRead.ToArray()));
             } catch (Exception ex) {
-                if (!ex.ToString().Contains("forcibly closed") &&
-                    !ex.ToString().Contains("valid Vrrg Packet") && 
+                if (!ex.ToString().Contains("forcibly closed") && 
+                    !ex.ToString().Contains("valid Vrrg Packet") &&
+                    !ex.ToString().Contains("A blocking operation") &&
                     !ex.ToString().Contains("connection was aborted"))
                     Console.WriteLine("\"" + ex + "\"");
                 
@@ -52,7 +53,7 @@ namespace Server {
         private void Listen() {
             while (Socket != null && Socket.Connected) {
                 Packet packet = ReceiveMessage();
-                if (packet == new Packet()) break;
+                if (packet == null || packet == new Packet()) break;
 
                 if (packet.Type != VrrgDataCollectionType.Command) {
                     Program.Broadcast(packet);
@@ -76,14 +77,23 @@ namespace Server {
                 Program.CloseClient(this);
         }
 
-        public void AbortListen() {
-            receiveStream.Close();
-            Console.WriteLine("Hallo1");
-            ListenToClient.Abort();
-            Console.WriteLine("Hallo2");
-        }
-
         private void CheckNewClientInfo() {
+            bool isServerFull = Program.ClientList.Count >= Program.MaxPlayers;
+
+            Program.SendMessage(this,
+                new Packet(
+                    "Server",
+                    "Client",
+                    VrrgDataCollectionType.Command,
+                    new [] { "isServerFull", isServerFull.ToString() }
+                )
+            );
+
+            if (isServerFull) {
+                Console.WriteLine("Client rejected: Server is full.");
+                return;
+            }
+
 			Packet packet = ReceiveMessage();
 
             if (packet.Type != VrrgDataCollectionType.Command) {
