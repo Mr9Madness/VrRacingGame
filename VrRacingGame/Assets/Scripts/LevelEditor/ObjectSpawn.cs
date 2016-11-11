@@ -3,13 +3,13 @@ using System.Collections;
 
 public class ObjectSpawn : MonoBehaviour
 {
-    GameObject[] Objects;
-    Transform parent;
+    static GameObject[] Objects;
+    static Transform parent;
 
     void Start()
     {
-        //Objects = ( FindObjectOfType( typeof( LevelEditor.TileMap ) ) as LevelEditor.TileMap ).Trackparts;
-        //parent = ( FindObjectOfType( typeof( LevelEditor.TileMap ) ) as LevelEditor.TileMap ).TrackContainer;
+        Objects = ( FindObjectOfType( typeof( LevelEditor.TileMap ) ) as LevelEditor.TileMap ).Trackparts;
+        parent = ( FindObjectOfType( typeof( LevelEditor.TileMap ) ) as LevelEditor.TileMap ).TrackContainer;
     }
     
     void Update()
@@ -19,6 +19,6 @@ public class ObjectSpawn : MonoBehaviour
 
     public static void SpawnObject( Vector3 pos, int TileValue )
     {
-        //Instantiate( Objects[ TileValue ], pos, parent );
+        Instantiate( Objects[ TileValue ], pos, Quaternion.identity, parent );
     }
 }
