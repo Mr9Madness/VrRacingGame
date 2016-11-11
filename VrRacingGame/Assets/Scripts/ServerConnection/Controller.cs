@@ -16,7 +16,12 @@ namespace ServerConnection
 
             Game.PlayerData.Socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
 
-            Debug.Log( new Packet("dingen", "dignen", VrrgDataCollectionType.Command ) );
+    	    Packet packet = new Packet( Client.ReceiveMessage() );
+            if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("isServerFull"))
+                if (packet.Variables["isServerFull"].ToLower() == "true") {
+                    Client.CloseConnection("Disconnected from server: Server is full.");
+                    return;
+                }
 
             Client.SendMessage(
                 new Packet(

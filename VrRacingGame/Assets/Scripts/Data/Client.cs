@@ -7,11 +7,23 @@ using System.Text;
 
 using VrRacingGameDataCollection;
 
-namespace ServerConnection
-{
-    public class Client : MonoBehaviour
+namespace ServerConnection {
+
+    static class Server {
+        public static string ServerName = "";
+        public static List<string> ClientList = new List<string>();
+        public static int MaxPlayers = 0;
+
+        public static void CleanVars() {
+            ServerName = "";
+            ClientList = new List<string>();
+            MaxPlayers = 0;
+        }
+    }
+
+public class Client : MonoBehaviour
     {
-        static bool isClosing;
+        public static bool isClosing;
         static bool Connected;
 
         public static void SendMessage( Packet packet, bool logMessage = true )
@@ -39,11 +51,11 @@ namespace ServerConnection
                 
         }
 
-        public static void CloseConnection( string message = "" )
+        public static void CloseConnection( string message = "", bool safeDisconnect = true )
         {
             isClosing = true;
 
-            if( Game.PlayerData.Socket != null && Game.PlayerData.Socket.Connected ) 
+            if( Game.PlayerData.Socket != null && Game.PlayerData.Socket.Connected && safeDisconnect ) 
             {
                 SendMessage
                 (
@@ -56,7 +68,8 @@ namespace ServerConnection
                     )
                 );
             }
-            Game.PlayerData.Socket.Close();
+
+            if (Game.PlayerData.Socket != null) Game.PlayerData.Socket.Close();
                         
             if( message.Trim( ' ' ).Length > 0 )
                 Console.WriteLine( message );
@@ -70,8 +83,10 @@ namespace ServerConnection
                 {
                     Packet packet = new Packet( ReceiveMessage() );
 
-                    switch( packet.Type )
-                    {
+                    switch( packet.Type ) {
+                    default:
+                        //Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
+                        break;
                     case VrrgDataCollectionType.None:
                         //Console.WriteLine("Server received packet with type \"None\": " + packet);
                         break;
@@ -85,19 +100,15 @@ namespace ServerConnection
                         break;
 
                     case VrrgDataCollectionType.ChatMessage:
-                        HandlePackets.ChatMessages(packet);
+                        HandlePackets.ChatMessages( packet );
                         break;
 
                     case VrrgDataCollectionType.MapData:
-                        HandlePackets.MapDatas(packet);
+                        HandlePackets.MapDatas( packet );
                         break;
 
-                    case VrrgDataCollectionType.TransformUpdate:
-                        HandlePackets.TransformUpdates(packet);
-                        break;
-
-                    default:
-                        //Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
+                    case VrrgDataCollectionType.PlayerUpdate:
+                        HandlePackets.PlayerUpdates( packet );
                         break;
                     }
                 }
@@ -112,7 +123,7 @@ namespace ServerConnection
             }
         }
 
-        private static string ReceiveMessage( bool logMessage = true )
+        public static string ReceiveMessage( bool logMessage = true )
         {
             try
             {
@@ -134,8 +145,7 @@ namespace ServerConnection
             {
                 if( !ex.ToString().Contains( "forcibly closed" ) && 
                     !ex.ToString().Contains("Thread was being aborted") ) 
-                {                    Debug.Log( "\n" + ex + "\n" );
-                    } //Console.WriteLine( "\n" + ex + "\n" );
+                    { Debug.Log( "\n" + ex + "\n" ); } //Console.WriteLine( "\n" + ex + "\n" );
                 if( !isClosing )
                     CloseConnection( "Disconnected from server." );
             }

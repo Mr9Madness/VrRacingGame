@@ -10,7 +10,7 @@ namespace VrRacingGameDataCollection
 		Command = 1,
 		Message = 2,
 		ChatMessage = 3,
-		TransformUpdate = 4,
+		PlayerUpdate = 4,
 		MapData = 5
 	}
 
