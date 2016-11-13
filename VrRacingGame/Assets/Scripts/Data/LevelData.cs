@@ -47,6 +47,7 @@ namespace Data
             }
             return null;
          }
+
         /// <summary>
         /// Dumps <see cref="LevelData"/> into a json file thats in the 'Assets/Data/level' folder 
         /// </summary>
@@ -62,6 +63,22 @@ namespace Data
 #else
             File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
 #endif
+        }
+
+        /// <summary>
+        /// Converts a given json string to a json file in 'Assets/Data/level'.
+        /// </summary>
+        /// <param name="jsonData">A string that contains the json data.</param>
+        /// <param name="fileName">Name of the file it gets stored in.</param>
+        public static void ToJsonFile( string fileName, string jsonData )
+        {
+            Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
+
+            #if UNITY_EDITOR
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", jsonData );
+            #else
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", jsonData );
+            #endif
         }
     }
 }
