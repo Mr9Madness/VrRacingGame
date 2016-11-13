@@ -137,7 +137,6 @@ public class Client : MonoBehaviour
                 if( logMessage ){
                     Debug.Log( message );
                 }
-                    //Console.WriteLine( message );
                     
                 return message;
             }
@@ -145,31 +144,57 @@ public class Client : MonoBehaviour
             {
                 if( !ex.ToString().Contains( "forcibly closed" ) && 
                     !ex.ToString().Contains("Thread was being aborted") ) 
-                    { Debug.Log( "\n" + ex + "\n" ); } //Console.WriteLine( "\n" + ex + "\n" );
+                    { Debug.Log( "\n" + ex + "\n" ); }
                 if( !isClosing )
                     CloseConnection( "Disconnected from server." );
             }
             return null;   
         }
 
-        public static bool HandlePassWord()
-        {
+        public static bool HandlePassword() {
             Packet p = new Packet( ReceiveMessage() );
 
-            if( p != new Packet() && p.Type == VrrgDataCollectionType.Command &&
-                p.Variables[ "usernameAvailable" ] != "false" ) 
-            {
-                if( p.Variables[ "passwordRequired" ] == "true" ) 
-                {
-                    
+            if (p == new Packet() || p.Type != VrrgDataCollectionType.Command ||
+                p.Variables["usernameAvailable"] == "false") return Connected;
+            if( p.Variables[ "passwordRequired" ] == "true" ) {
+                while (true) {
+                    // Make a password prompt message box.
+                    string pass = Console.ReadLine(); // Get password from prompt box
+
+                    SendMessage(
+                        new Packet(
+                            "test",//Username,
+                            "Server",
+                            VrrgDataCollectionType.Command,
+                            new[] { "password", pass }
+                        )
+                    );
+
+                    Packet password = new Packet(ReceiveMessage());
+
+                    if (password != new Packet() &&
+                        password.Type == VrrgDataCollectionType.Command &&
+                        password.Variables.Count > 0 &&
+                        password.Variables["passwordAccepted"] == "true") {
+
+                        Console.WriteLine("Connected to \"" + password.Variables["serverName"] + "\"!");
+                        Connected = true;
+
+                        break;
+                    }
+
+                    // If password is wrong, show message
+                    //Console.Clear();
+                    //Console.WriteLine("The password you used is incorrect.");
                 }
-                else if (p.Variables["passwordRequired"] == "false") 
-                {
-                    Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\"!");
-                    Connected = true;
-                }
-                else Console.WriteLine("Password key not found in packet");
-            }
+            } else if (p.Variables["passwordRequired"] == "false") {
+                // Show a connected message.
+                //Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\"!");
+                Connected = true;
+            } //else
+                // Show a debug message
+                //Console.WriteLine("Password key not found in packet");
+
             return Connected;
         }
     }
