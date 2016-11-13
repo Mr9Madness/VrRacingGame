@@ -9,7 +9,7 @@ namespace ServerConnection
 {
     public class Controller : MonoBehaviour
     {
-        private System.Threading.Thread _listenThread = null;
+        private Thread _listenThread = null;
     	void Start () 
         {
             string[] address = PlayerPrefs.GetString( "IP", ":" ).Split( ':' );
@@ -32,7 +32,7 @@ namespace ServerConnection
                 )
             );
 
-            if( !Client.HandlePassWord() )
+            if( !Client.HandlePassword() )
                 return;
 
             _listenThread = new Thread( Client.Listen );
