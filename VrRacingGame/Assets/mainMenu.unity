@@ -2710,10 +2710,10 @@ RectTransform:
   - {fileID: 928958132}
   m_Father: {fileID: 106565392}
   m_RootOrder: 0
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -780, y: -400}
+  m_SizeDelta: {x: 500, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &696477492
 MonoBehaviour:
@@ -4142,7 +4142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   EventSystem: {fileID: 414418707}
   WindowSizeDropdown: {fileID: 1176683700}
-  Dingen: {fileID: 696477491}
+  SelectedObject: {fileID: 696477491}
 --- !u!1 &1068862179
 GameObject:
   m_ObjectHideFlags: 0

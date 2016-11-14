@@ -11,14 +11,14 @@ namespace MainMenu
 
         public Dropdown WindowSizeDropdown;
 
-        public RectTransform Dingen;
+        public RectTransform SelectedObject;
 
         public static UI.ErrorNotice ConnectError;
 
         void Start()
         {
-            ConnectError = Dingen.gameObject.AddComponent< UI.ErrorNotice >() as UI.ErrorNotice;
-            ConnectError.TargetPos = Dingen;
+            ConnectError = SelectedObject.gameObject.AddComponent< UI.ErrorNotice >();
+            ConnectError.TargetPos = SelectedObject;
 
             Resolution[] supportedResolutions = Screen.resolutions;
 

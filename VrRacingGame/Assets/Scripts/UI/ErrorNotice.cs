@@ -14,7 +14,7 @@ namespace UI
 
     public class ErrorNotice : MonoBehaviour
     {
-        public RectTransform TargetPos;
+        public Transform TargetPos;
         private GameObject _canvas;
 
         private GameObject _errorBox;
@@ -25,17 +25,16 @@ namespace UI
         {            
             _canvas = GameObject.Find( "Canvas" ).transform.FindChild( "Notices" ).gameObject;
             
-            // TODO - Create a new object and put it in _parent var
             _errorBox = new GameObject( "Error Box" );
             _errorBox.transform.SetParent( _canvas.transform );
             _errorBox.transform.position = _canvas.transform.position;
 
-            _errorPanel = _errorBox.AddComponent< Image >() as Image;
+            _errorPanel = _errorBox.AddComponent< Image >();
             _errorPanel.rectTransform.sizeDelta = new Vector2( 200, 50 );
             _errorPanel.rectTransform.localScale = Vector3.one;
             _errorBox.SetActive( TargetPos.gameObject.activeSelf );
 
-            _errorText = new GameObject("Error Text").AddComponent< Text >() as Text;
+            _errorText = new GameObject("Error Text").AddComponent< Text >();
             _errorText.transform.position = _errorBox.transform.position;
             _errorText.transform.SetParent( _errorBox.transform );
             _errorText.font = Resources.GetBuiltinResource< Font >( "Arial.ttf" );
@@ -57,7 +56,7 @@ namespace UI
             Show( message, displayTime );
         }
 
-        public void Show( string message, float displayTime = 500f )
+        public void Show( string message, float displayTime = 5f )
         {
             StartCoroutine( FadeAlpha( displayTime ) );
             DisplayText = message;
@@ -72,6 +71,15 @@ namespace UI
             _errorText.color = resetColor;
 
             yield return new WaitForSeconds( displayTime );
+
+            while( _errorText.color.a > 0 )
+            {
+                Color displayColor = _errorText.color;
+                displayColor.a -= Time.deltaTime / displayTime;
+                _errorText.color = displayColor;
+                yield return null;
+            }
+            yield return null;
         }
 
         public string DisplayText

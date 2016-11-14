@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System;
+using System.Text.RegularExpressions;
+using System.IO;
 
 namespace LevelEditor
 {
@@ -10,11 +12,16 @@ namespace LevelEditor
 		public GameObject[] Trackparts;
 		public Transform TrackContainer;
 
-		public string MapName;
+        public GameObject PlaceArea;
+
+        public string LevelName;
 
         void Start()
         {
             _tileData = new Data.Level();
+
+            LevelName = _tileData.LevelName;
+
             InitLevel();
         }
 
@@ -22,14 +29,12 @@ namespace LevelEditor
         {
 			if ( TrackContainer == null )
 				TrackContainer = new GameObject( "Track" ).transform;
-
 			EmptyLevel();
         }
 
 		public void EmptyLevel()
 		{
 			if( TrackContainer == null ) return;
-			if( TrackContainer.childCount <= 0 ) return;
 
 			while( TrackContainer.childCount > 0 )
 				foreach( Transform child in TrackContainer )
@@ -37,9 +42,17 @@ namespace LevelEditor
 
 		}
 
+        public void ChangeValue( string levelName = "" )
+        {
+            if( levelName != "" )
+            {
+                _tileData.LevelName = levelName;
+            }
+        }
+
         public void CreateJsonFile()
         {
-            Data.Level.ToJsonFile( "test", _tileData );
+            Data.Level.ToJsonFile( _tileData );
         }
 	}
 }

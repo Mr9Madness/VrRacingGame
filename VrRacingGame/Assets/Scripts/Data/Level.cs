@@ -88,7 +88,7 @@ namespace Data
         /// <summary>
         /// Converts a given json string to a json file in the 'Assets/Data/level' folder.
         /// </summary>
-        /// <param name="jsonData">A string that contains the json data.</param>
+        /// <param name="json">A string that contains the json data.</param>
         public static void ToJsonFile( string json )
         {
             Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
@@ -96,7 +96,7 @@ namespace Data
             Level levelData = JsonUtility.FromJson< Level >( json );
 
             string legalLevelName = levelData.LevelName.Trim( ' ' );
-            string regexSearch = new String( Path.GetInvalidFileNameChars() );
+            string regexSearch = new string( Path.GetInvalidFileNameChars() );
             Regex r = new Regex( string.Format( "[{0}]", Regex.Escape( regexSearch ) ) );
             legalLevelName = r.Replace( legalLevelName, "" );
 

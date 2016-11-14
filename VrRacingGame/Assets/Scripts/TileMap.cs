@@ -10,7 +10,7 @@ namespace Game
         public GameObject[] Trackparts;
         public Transform TrackContainer;
 
-        public string MapName;
+        public static string MapName = "level1";
 
         void Start()
         {        
@@ -31,7 +31,10 @@ namespace Game
                 for ( int y = 0; y < _tileData.LevelHeight; y++ )
                 {
                     int tileValue = _tileData.GetTile( x, y );
-                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
+                    if( tileValue >= 0 )
+                        return;
+                    
+                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, ( tileValue ) * 90, 0 ), TrackContainer );
                 }
             }
         }
