@@ -33,7 +33,7 @@ namespace ServerConnection {
         }
 
         public static void MapDatas(Packet p) {
-            Data.Level.ToJsonFile(p.Variables["levelName"], p.Variables["json"]);
+            Data.Level.ToJsonFile(p.Variables["json"]);
             Game.TileMap.MapName = p.Variables["levelName"];
             // Use p.Variables["json"] and convert it to a map-object
         }
