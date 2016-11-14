@@ -79,6 +79,7 @@
      <Compile Include="Assets\Scripts\Data\Level.cs" />
      <Compile Include="Assets\Scripts\Data\Player.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\CameraController.cs" />
+     <Compile Include="Assets\Scripts\LevelEditor\LevelEditorUIController.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\ObjectSpawn.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\TileMap.cs" />
      <Compile Include="Assets\Scripts\MainMenu\MainMenuController.cs" />
@@ -89,11 +90,10 @@
      <Compile Include="Assets\Scripts\ServerConnection\NetworkInfo.cs" />
      <Compile Include="Assets\Scripts\TileMap.cs" />
      <Compile Include="Assets\Scripts\UI\ErrorNotice.cs" />
+     <Compile Include="Assets\Scripts\UI\PopupWindow.cs" />
      <None Include="Assets\OVR\Shaders\OVRColorRampAlpha.shader" />
      <None Include="Assets\OVR\Shaders\Unlit Crosshair.shader" />
      <None Include="Assets\OVR\Resources\Unlit Transparent Color.shader" />
-     <None Include="Assets\Data\level\test.json" />
-     <None Include="Assets\Resources\level1.json" />
  <Reference Include="UnityEngine.UI">
  <HintPath>D:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
