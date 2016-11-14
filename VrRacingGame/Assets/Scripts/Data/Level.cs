@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Text;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace Data
@@ -10,24 +10,24 @@ namespace Data
     {
         public int LevelWidth = 16;
         public int LevelHeight = 16;
-        public string LevelName = "empty";
+        public string LevelName = "level1";
         public int[] LevelData = { 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 
+            -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 
         };
 
         public int GetTile( int x, int y )
@@ -70,26 +70,37 @@ namespace Data
         /// <summary>
         /// Converts a given <see cref="Level"/>object to a json file in the 'Assets/Data/level' folder.
         /// </summary>
-        /// <param name="fileName">The Name thats the file recieves</param>
         /// <param name="levelData">The object thats needs to be converted</param>
-        public static void ToJsonFile( string fileName, object levelData )
-        {
-            string json = JsonUtility.ToJson( levelData );
+        public static void ToJsonFile( Level levelData )
+        {                       
             Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
 
-            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
+            string json = JsonUtility.ToJson( levelData );
+
+            string legalLevelName = levelData.LevelName.Trim( ' ' );
+            string regexSearch = new String( Path.GetInvalidFileNameChars() );
+            Regex r = new Regex( string.Format( "[{0}]", Regex.Escape( regexSearch ) ) );
+            legalLevelName = r.Replace( legalLevelName, "" );
+
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + legalLevelName + ".json", json );
         }
 
         /// <summary>
         /// Converts a given json string to a json file in the 'Assets/Data/level' folder.
         /// </summary>
         /// <param name="jsonData">A string that contains the json data.</param>
-        /// <param name="fileName">Name of the file it gets stored in.</param>
-        public static void ToJsonFile( string fileName, string jsonData )
+        public static void ToJsonFile( string json )
         {
             Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
 
-            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", jsonData );
+            Level levelData = JsonUtility.FromJson< Level >( json );
+
+            string legalLevelName = levelData.LevelName.Trim( ' ' );
+            string regexSearch = new String( Path.GetInvalidFileNameChars() );
+            Regex r = new Regex( string.Format( "[{0}]", Regex.Escape( regexSearch ) ) );
+            legalLevelName = r.Replace( legalLevelName, "" );
+
+            File.WriteAllText( Application.dataPath + @"\Data\level\" + legalLevelName + ".json", json );
         }
     }
 }
