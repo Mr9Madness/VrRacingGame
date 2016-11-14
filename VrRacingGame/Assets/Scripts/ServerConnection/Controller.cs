@@ -14,7 +14,9 @@ namespace ServerConnection
         {
             string[] address = PlayerPrefs.GetString( "IP", ":" ).Split( ':' );
 
-            Game.PlayerData.Socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
+            Data.Player.Socket.Connect( address[ 0 ], int.Parse( address[ 1 ] ) );
+
+            Debug.Log( Client.ReceiveMessage() );
 
     	    Packet packet = new Packet( Client.ReceiveMessage() );
             if (packet.Type == VrrgDataCollectionType.Command && packet.Variables.ContainsKey("isServerFull"))

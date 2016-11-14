@@ -6,21 +6,40 @@ using UnityEngine;
 namespace Data
 {
     [ Serializable ]
-    public class LevelData
+    public class Level
     {
-        public int LevelWidth = 0;
-        public int LevelHeight = 0;
+        public int LevelWidth = 16;
+        public int LevelHeight = 16;
         public string LevelName = "empty";
-        public int[] Level = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        public int[] LevelData = { 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
+        };
 
         public int GetTile( int x, int y )
         {
-            return Level[ x + LevelWidth * y ];
+            return LevelData[ x + LevelWidth * y ];
         }
 
         public void SetTile( int x, int y, int value )
         {
-            Level[ x + LevelWidth * y ] = value;
+            Debug.Log( x + " | " + y + " | " + LevelWidth );
+            Debug.Log( x + ( LevelWidth * y ) );
+            LevelData[ x + ( LevelWidth * y ) ] = value;
         }
 
         /// <summary>
@@ -28,14 +47,14 @@ namespace Data
         /// </summary>
         /// <param name="levelName">The name of the level that needs to load</param>
         /// <returns>The <see cref="LevelData"/> struct thats filled with the data from the given level name. </returns>
-        public static LevelData CreateFromJson( string levelName )
+        public static Level CreateFromJson( string levelName )
         {
             //string json = File.ReadAllText( @"Assets\Data\level\" + levelName + ".json" );
             TextAsset loaded = Resources.Load( levelName ) as TextAsset;
             if( loaded != null )
             {
                 Debug.Log( loaded );
-                return JsonUtility.FromJson< LevelData >( loaded.text );
+                return JsonUtility.FromJson< Level >( loaded.text );
             }
             string loadedString = File.ReadAllText( Application.dataPath + @"\Data\level\" + levelName + ".json" );
 
@@ -43,13 +62,13 @@ namespace Data
             {                          
                 Debug.Log( loadedString );
 
-                return JsonUtility.FromJson< LevelData >( loadedString );
+                return JsonUtility.FromJson< Level >( loadedString );
             }
             return null;
          }
 
         /// <summary>
-        /// Dumps <see cref="LevelData"/> into a json file thats in the 'Assets/Data/level' folder 
+        /// Converts a given <see cref="Level"/>object to a json file in the 'Assets/Data/level' folder.
         /// </summary>
         /// <param name="fileName">The Name thats the file recieves</param>
         /// <param name="levelData">The object thats needs to be converted</param>
@@ -58,15 +77,11 @@ namespace Data
             string json = JsonUtility.ToJson( levelData );
             Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
 
-#if UNITY_EDITOR
             File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
-#else
-            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", json );
-#endif
         }
 
         /// <summary>
-        /// Converts a given json string to a json file in 'Assets/Data/level'.
+        /// Converts a given json string to a json file in the 'Assets/Data/level' folder.
         /// </summary>
         /// <param name="jsonData">A string that contains the json data.</param>
         /// <param name="fileName">Name of the file it gets stored in.</param>
@@ -74,11 +89,7 @@ namespace Data
         {
             Directory.CreateDirectory( Application.dataPath + @"\Data\level" );
 
-            #if UNITY_EDITOR
             File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", jsonData );
-            #else
-            File.WriteAllText( Application.dataPath + @"\Data\level\" + fileName + ".json", jsonData );
-            #endif
         }
     }
 }

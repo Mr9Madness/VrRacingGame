@@ -3,10 +3,9 @@ using UnityEngine;
 
 namespace Game
 {
-
     public class TileMap : MonoBehaviour
     {
-        private Data.LevelData _tileData;
+        private Data.Level _tileData;
 
         public GameObject[] Trackparts;
         public Transform TrackContainer;
@@ -20,7 +19,7 @@ namespace Game
 
         public void InitLevel()
         {
-            _tileData = Data.LevelData.CreateFromJson( MapName );
+            _tileData = Data.Level.CreateFromJson( MapName );
 
             if ( TrackContainer == null )
                 TrackContainer = new GameObject( "Track" ).transform;

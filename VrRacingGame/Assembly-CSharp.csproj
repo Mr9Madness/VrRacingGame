@@ -76,7 +76,8 @@
      <Compile Include="Assets\Scripts\CameraController.cs" />
      <Compile Include="Assets\Scripts\CarController.cs" />
      <Compile Include="Assets\Scripts\Data\Client.cs" />
-     <Compile Include="Assets\Scripts\Data\LevelData.cs" />
+     <Compile Include="Assets\Scripts\Data\Level.cs" />
+     <Compile Include="Assets\Scripts\Data\Player.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\CameraController.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\ObjectSpawn.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\TileMap.cs" />

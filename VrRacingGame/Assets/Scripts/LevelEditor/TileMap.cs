@@ -5,7 +5,7 @@ namespace LevelEditor
 {
 	public class TileMap : MonoBehaviour
 	{
-        public static Data.LevelData _tileData;
+        public static Data.Level _tileData;
 
 		public GameObject[] Trackparts;
 		public Transform TrackContainer;
@@ -14,28 +14,17 @@ namespace LevelEditor
 
         void Start()
         {
-            _tileData = new Data.LevelData();
+            _tileData = new Data.Level();
             InitLevel();
         }
 
 		public void InitLevel()
-        {                        
-			_tileData = Data.LevelData.CreateFromJson( MapName );
-
+        {
 			if ( TrackContainer == null )
 				TrackContainer = new GameObject( "Track" ).transform;
 
 			EmptyLevel();
-
-			for( int x = 0; x < _tileData.LevelWidth; x++ )
-			{
-				for ( int y = 0; y < _tileData.LevelHeight; y++ )
-				{
-					int tileValue = _tileData.GetTile( x, y );
-					Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
-				}
-			}
-		}
+        }
 
 		public void EmptyLevel()
 		{
@@ -50,7 +39,7 @@ namespace LevelEditor
 
         public void CreateJsonFile()
         {
-            Data.LevelData.ToJsonFile( "test", _tileData );
+            Data.Level.ToJsonFile( "test", _tileData );
         }
 	}
 }

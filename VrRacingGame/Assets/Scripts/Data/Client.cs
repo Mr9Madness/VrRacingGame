@@ -32,7 +32,7 @@ public class Client : MonoBehaviour
             {
                 byte[] buffer = Encoding.ASCII.GetBytes( packet.ToString() );
 
-                NetworkStream sendStream = Game.PlayerData.Socket.GetStream();
+                NetworkStream sendStream = Data.Player.Socket.GetStream();
 
                 sendStream.Write( buffer, 0, buffer.Length );
 
@@ -55,13 +55,13 @@ public class Client : MonoBehaviour
         {
             isClosing = true;
 
-            if( Game.PlayerData.Socket != null && Game.PlayerData.Socket.Connected && safeDisconnect ) 
+            if( Data.Player.Socket != null && Data.Player.Socket.Connected && safeDisconnect ) 
             {
                 SendMessage
                 (
                     new Packet
                     (
-                        Game.PlayerData.UserName,
+                        Data.Player.UserName,
                         "Server",
                         VrrgDataCollectionType.Command,
                         new[] { "disconnectRequest", "true" }
@@ -69,7 +69,7 @@ public class Client : MonoBehaviour
                 );
             }
 
-            if (Game.PlayerData.Socket != null) Game.PlayerData.Socket.Close();
+            if( Data.Player.Socket != null) Data.Player.Socket.Close();
                         
             if( message.Trim( ' ' ).Length > 0 )
                 Console.WriteLine( message );
@@ -79,7 +79,7 @@ public class Client : MonoBehaviour
         {
             try
             {
-                while( Game.PlayerData.Socket.Connected && !isClosing )
+                while( Data.Player.Socket.Connected && !isClosing )
                 {
                     Packet packet = new Packet( ReceiveMessage() );
 
@@ -127,7 +127,7 @@ public class Client : MonoBehaviour
         {
             try
             {
-                NetworkStream getStream = Game.PlayerData.Socket.GetStream();
+                NetworkStream getStream = Data.Player.Socket.GetStream();
                 byte[] buffer = new byte[ 256 ];
 
                 int readCount = getStream.Read( buffer, 0, buffer.Length );

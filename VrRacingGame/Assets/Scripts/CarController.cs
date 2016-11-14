@@ -264,12 +264,4 @@ namespace Game
         }
 
     }
-
-    public static class PlayerData
-    {
-        public static TcpClient Socket = new TcpClient();
-        public static string UserName = "";
-
-
-    }
 }

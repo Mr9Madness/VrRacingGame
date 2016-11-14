@@ -281,6 +281,7 @@ GameObject:
   - 4: {fileID: 583784866}
   - 54: {fileID: 583784867}
   - 114: {fileID: 583784868}
+  - 114: {fileID: 583784869}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -331,6 +332,17 @@ MonoBehaviour:
   Speed: 500
   MouseSensitivity: 3
   PauseMenu: {fileID: 1269517822}
+--- !u!114 &583784869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 583784865}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b263b0aa7e9f6b4383f5d71406de91e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &742024219
 GameObject:
   m_ObjectHideFlags: 0
@@ -1096,8 +1108,8 @@ GameObject:
   - 64: {fileID: 2017785135}
   - 23: {fileID: 2017785134}
   m_Layer: 0
-  m_Name: Plane (2)
-  m_TagString: Untagged
+  m_Name: PlaceArea
+  m_TagString: PlaceArea
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

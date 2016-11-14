@@ -39,8 +39,10 @@ namespace LevelEditor
             }
             if( isPaused ) return;
 
-			float horizontal = Input.GetAxis( "Horizontal" );
-			float vertical = Input.GetAxis( "Vertical" );
+			float horizontal = Input.GetAxis( "Horizontal" ) * Speed;
+			float vertical = Input.GetAxis( "Vertical" ) * Speed;
+
+            Move( horizontal, vertical );
 
 			if( Input.GetMouseButton( 1 ) )
 				Rotate();
@@ -52,14 +54,16 @@ namespace LevelEditor
 
                 if( Physics.Raycast( mouseRay, out mouseRayHit, Mathf.Infinity ) )
                 {
-                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x ) / 32, 0, Mathf.FloorToInt( mouseRayHit.point.z ) / 32 );
+                    if( mouseRayHit.collider.tag != "PlaceArea" )
+                        return;
+                    
+                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x / 32 ), 1 / 32, Mathf.FloorToInt( mouseRayHit.point.z / 32 ) );
+
                     ObjectSpawn.SpawnObject( mousePos, 0 );
-                    LevelEditor.TileMap._tileData.SetTile( Mathf.RoundToInt( mousePos.x ),  Mathf.RoundToInt( mousePos.y ), 0 );
-                    Debug.Log( mousePos );
+
+                    LevelEditor.TileMap._tileData.SetTile( Mathf.FloorToInt( mouseRayHit.point.x / 32 ),  Mathf.FloorToInt( mouseRayHit.point.z / 32 ), 0 );
                 }
             }
-
-			Move( horizontal * Speed, vertical * Speed );
 		}
 
 		void Move( float horizontal, float vertical )
