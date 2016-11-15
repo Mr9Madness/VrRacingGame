@@ -14,7 +14,7 @@ namespace ServerConnection {
         public static List<string> ClientList = new List<string>();
         public static int MaxPlayers = 0;
 
-        public static void CleanVars() {
+        public static void ClearVars() {
             ServerName = "";
             ClientList = new List<string>();
             MaxPlayers = 0;
@@ -36,14 +36,13 @@ public class Client : MonoBehaviour
 
                 sendStream.Write( buffer, 0, buffer.Length );
 
-                if(logMessage){}
-                    //Console.WriteLine( Username + " > Server: " + packet );
+                if (logMessage)
+                    Debug.Log("\n" + Data.Player.UserName + " > Server: " + packet + "\n");
 
             }
-            catch( Exception ex ) 
-            {
-                if( !ex.ToString().Contains( "actively refused" ) && !ex.ToString().Contains( "forcibly close" ) ) 
-                {} // Console.WriteLine( "\n" + ex + "\n" );
+            catch( Exception ex ) {
+                if (!ex.ToString().Contains("actively refused") && !ex.ToString().Contains("forcibly close"))
+                    Debug.Log("\n" + ex + "\n");
             
                 if( !isClosing )
                     CloseConnection( "Disconnected from server." );
@@ -70,6 +69,7 @@ public class Client : MonoBehaviour
             }
 
             if( Data.Player.Socket != null) Data.Player.Socket.Close();
+            Server.ClearVars();
                         
             if( message.Trim( ' ' ).Length > 0 )
                 Console.WriteLine( message );
@@ -85,12 +85,11 @@ public class Client : MonoBehaviour
 
                     switch( packet.Type ) {
                     default:
-                        //Console.WriteLine("Type \"" + packet.Type + "\" was not recognized by the server.");
+                        Debug.Log("Type \"" + packet.Type + "\" was not recognized by the server.");
                         break;
                     case VrrgDataCollectionType.None:
-                        //Console.WriteLine("Server received packet with type \"None\": " + packet);
+                        Debug.Log("Server received packet with type \"None\": " + packet);
                         break;
-
                     case VrrgDataCollectionType.Command:
                         HandlePackets.Commands( packet );
                         break;
@@ -117,7 +116,7 @@ public class Client : MonoBehaviour
             {
                 if( !ex.ToString().Contains( "forcibly closed" ) &&
                     !ex.ToString().Contains( "Thread was being aborted" ) )
-                {}//Console.WriteLine("\n" + ex + "\n");
+                    Debug.Log("\n" + ex + "\n");
                 if( !isClosing )
                     CloseConnection( "Disconnected from server." );
             }
@@ -128,7 +127,7 @@ public class Client : MonoBehaviour
             try
             {
                 NetworkStream getStream = Data.Player.Socket.GetStream();
-                byte[] buffer = new byte[ 256 ];
+                byte[] buffer = new byte[ 1024 ];
 
                 int readCount = getStream.Read( buffer, 0, buffer.Length );
                 List< byte > actualRead = new List< byte >( buffer ).GetRange( 0, readCount );
