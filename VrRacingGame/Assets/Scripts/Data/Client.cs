@@ -9,7 +9,7 @@ using VrRacingGameDataCollection;
 
 namespace ServerConnection {
 
-    static class Server {
+    public static class Server {
         public static string ServerName = "";
         public static List<string> ClientList = new List<string>();
         public static int MaxPlayers = 0;
