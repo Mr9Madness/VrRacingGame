@@ -31,10 +31,10 @@ namespace Game
                 for ( int y = 0; y < _tileData.LevelHeight; y++ )
                 {
                     int tileValue = _tileData.GetTile( x, y );
-                    if( tileValue >= 0 )
+                    if( tileValue < 0 )
                         return;
                     
-                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, ( tileValue ) * 90, 0 ), TrackContainer );
+                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
                 }
             }
         }

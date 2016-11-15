@@ -1,7 +1,4 @@
 ﻿using UnityEngine;
-using System.Net.Sockets;
-
-// ReSharper disable FieldCanBeMadeReadOnly.Local
 
 namespace Game
 {
@@ -27,20 +24,14 @@ namespace Game
         [ SerializeField ] private float _fullTorqueOverAllWheels;
         [ SerializeField ] private float _brakeTorque;
         [ SerializeField ] private float _reverseTorque;
-        [ SerializeField ] private float _slipLimit;
-        [ SerializeField ] private Vector3 _centreOfMassOffset;
         [ SerializeField ] private float _maximumSteerAngle;
         [ SerializeField ] private float _maxHandbrakeTorque;
-        [ SerializeField ] private float _downforce = 100f;
-        [ SerializeField ] private float _topspeed = 200;
-        [ SerializeField ] private static int NoOfGears = 5;
-        [ SerializeField ] private float _revRangeBoundary = 1f;
 
-        public float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
+        private float CurrentSpeed { get { return _rigidbody.velocity.magnitude * 3.6f; } }
 
         private Quaternion[] _wheelMeshLocalRotation;
         private Rigidbody _rigidbody;
-        //private float _slipLimit = 0.3f;
+        private float _slipLimit = 0.3f;
         private float _tractionControl = 1;
         private float _steerHelper = 1;
         private float _accelValue;
@@ -52,24 +43,12 @@ namespace Game
         private float _maxSpeed = 200;
 
         private Quaternion[] _wheelMeshLocalRotations;
-        private Vector3 _prevpos, _pos;
-        private float _steerAngle;
-        private int _gearNum;
-        private float _gearFactor;
-        private const float _reversingThreshold = 0.01f;
-
-        public bool Skidding { get; private set; }
-        public float BrakeInput { get; private set; }
-        public float CurrentSteerAngle{ get { return _steerAngle; }}
-        public float MaxSpeed{get { return _topspeed; }}
-        public float Revs { get; private set; }
-        public float AccelInput { get; private set; }
 
         void Start()
         {
-            _wheelMeshLocalRotation = new Quaternion[ 4 ];
-            for ( int i = 0; i < 4; i++ )
-                _wheelMeshLocalRotation[ i ] = _wheelMeshes[ i ].transform.localRotation;
+            //_wheelMeshLocalRotation = new Quaternion[ 4 ];
+            //for ( int i = 0; i < 4; i++ )
+            //    _wheelMeshLocalRotation[ i ] = _wheelMeshes[ i ].transform.localRotation;
 
             _maxHandbrakeTorque = float.MaxValue;
 
@@ -102,8 +81,8 @@ namespace Game
                 Quaternion quat;
                 Vector3 position;
                 _wheelColliders[ i ].GetWorldPose( out position, out quat );
-                _wheelMeshes[ i ].transform.position = position;
-                _wheelMeshes[ i ].transform.rotation = quat * Quaternion.Euler( 0, 0, 90 );
+                //_wheelMeshes[ i ].transform.position = position;
+                //_wheelMeshes[ i ].transform.rotation = quat;
             }
 
             steeringValue = Mathf.Clamp( steeringValue, -1, 1 );
