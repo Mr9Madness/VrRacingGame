@@ -34,7 +34,7 @@ namespace Game
                     if( tileValue < 0 )
                         return;
                     
-                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, tileValue * 90, 0 ), TrackContainer );
+                    Instantiate( Trackparts[ tileValue ], new Vector3( x * 31.5f, 0, y * 31.5f ), Quaternion.Euler( 0, ( tileValue - 1 ) * 90, 0 ), TrackContainer );
                 }
             }
         }
