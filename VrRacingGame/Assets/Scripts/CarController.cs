@@ -40,7 +40,7 @@ namespace Game
         private float _currentTorque;
         private DriveType _driveType = DriveType.RearWheelDrive;
         private float _oldRotation;
-        private float _maxSpeed = 200;
+        private float _maxSpeed = 500;
 
         private Quaternion[] _wheelMeshLocalRotations;
 
@@ -143,11 +143,10 @@ namespace Game
 
         private void CapSpeed()
         {
-            float speed = _rigidbody.velocity.magnitude;
+            float speed = _rigidbody.velocity.magnitude * 3.6f;
             
-            speed *= 3.6f;
             if( speed > _maxSpeed )
-                _rigidbody.velocity = ( _maxSpeed / 3.6f ) * _rigidbody.velocity.normalized;
+                _rigidbody.velocity = _maxSpeed / 3.6f * _rigidbody.velocity.normalized;
             
         }
 

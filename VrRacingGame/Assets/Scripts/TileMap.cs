@@ -10,7 +10,7 @@ namespace Game
         public GameObject[] Trackparts;
         public Transform TrackContainer;
 
-        public static string MapName = "level1";
+        public static string MapName = "straight";
 
         void Start()
         {        
