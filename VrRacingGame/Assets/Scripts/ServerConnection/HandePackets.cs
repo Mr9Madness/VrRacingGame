@@ -39,8 +39,31 @@ namespace ServerConnection {
         }
 
         public static void PlayerUpdates(Packet p) {
-            // Use p.From, p.Variables["position"] and p.Variables["rotation"] (additionally p.Variables["speed"] too)
-            // to make other players move.
+            if (!Data.Network.Players.ContainsKey(p.Variables["playerName"])) {
+                UnityEngine.Debug.Log(p.Variables["playerName"] + " is not connected, therefor it's transform cannot be updated.");
+                return;
+            }
+
+            Game.CarController player = Data.Network.Players[p.Variables["playerName"]];
+            UnityEngine.Vector3 position = CreateVector3FromString(p.Variables["position"]);
+            UnityEngine.Quaternion rotation = CreateQuaternionFromString(p.Variables["rotation"]);
+
+            player.transform.position = position;
+            player.transform.rotation = rotation;
+
+            Data.Network.Players[p.Variables["playerName"]] = player;
+        }
+
+        private static UnityEngine.Vector3 CreateVector3FromString(string str) {
+            float[] pos = str.Split(',').Select(Convert.ToDouble).Cast<float>().ToArray();
+
+            return new UnityEngine.Vector3(pos[0], pos[1], pos[2]);
+        }
+
+        private static UnityEngine.Quaternion CreateQuaternionFromString(string str) {
+            float[] pos = str.Split(',').Select(Convert.ToDouble).Cast<float>().ToArray();
+
+            return new UnityEngine.Quaternion(pos[0], pos[1], pos[2], pos[3]);
         }
 
     }

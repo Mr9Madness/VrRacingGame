@@ -18,156 +18,162 @@ namespace ServerConnection {
             ServerName = "";
             ClientList = new List<string>();
             MaxPlayers = 0;
+
+            Data.Network.Players = new Dictionary<string, Game.CarController>();
         }
     }
 
-public class Client : MonoBehaviour
-    {
+    public class Client : MonoBehaviour {
         public static bool isClosing;
         static bool Connected;
 
-        public static void SendMessage( Packet packet, bool logMessage = true )
-        {
-            try
-            {
-                byte[] buffer = Encoding.ASCII.GetBytes( packet.ToString() );
+        public static void SendMessage(Packet packet, bool logMessage = true) {
+            try {
+                byte[] buffer = Encoding.ASCII.GetBytes(packet.ToString());
 
                 NetworkStream sendStream = Data.Player.Socket.GetStream();
 
-                sendStream.Write( buffer, 0, buffer.Length );
+                sendStream.Write(buffer, 0, buffer.Length);
 
                 if (logMessage)
                     Debug.Log("\n" + Data.Player.UserName + " > Server: " + packet + "\n");
 
-            }
-            catch( Exception ex ) {
+            } catch (Exception ex) {
                 if (!ex.ToString().Contains("actively refused") && !ex.ToString().Contains("forcibly close"))
                     Debug.Log("\n" + ex + "\n");
-            
-                if( !isClosing )
-                    CloseConnection( "Disconnected from server." );
-            }   
-                
+
+                if (!isClosing)
+                    CloseConnection("Disconnected from server.");
+            }
+
         }
 
-        public static void CloseConnection( string message = "", bool safeDisconnect = true )
-        {
+        public static void CloseConnection(string message = "", bool safeDisconnect = true) {
             isClosing = true;
 
-            if( Data.Player.Socket != null && Data.Player.Socket.Connected && safeDisconnect ) 
-            {
+            if (Data.Player.Socket != null && Data.Player.Socket.Connected && safeDisconnect) {
                 SendMessage
-                (
-                    new Packet
                     (
-                        Data.Player.UserName,
-                        "Server",
-                        VrrgDataCollectionType.Command,
-                        new[] { "disconnectRequest", "true" }
-                    )
-                );
+                        new Packet
+                            (
+                            Data.Player.UserName,
+                            "Server",
+                            VrrgDataCollectionType.Command,
+                            new[] {"disconnectRequest", "true"}
+                            )
+                    );
             }
 
-            if( Data.Player.Socket != null) Data.Player.Socket.Close();
+            if (Data.Player.Socket != null) Data.Player.Socket.Close();
             Server.ClearVars();
-                        
-            if( message.Trim( ' ' ).Length > 0 )
-                Console.WriteLine( message );
+
+            if (message.Trim(' ').Length > 0)
+                Console.WriteLine(message);
         }
 
-        public static void  Listen()
-        {
-            try
-            {
-                while( Data.Player.Socket.Connected && !isClosing )
-                {
-                    Packet packet = new Packet( ReceiveMessage() );
+        public static void Listen() {
+            try {
+                while (Data.Player.Socket.Connected && !isClosing) {
+                    Packet packet = new Packet(ReceiveMessage());
 
-                    switch( packet.Type ) {
-                    default:
-                        Debug.Log("Type \"" + packet.Type + "\" was not recognized by the server.");
-                        break;
-                    case VrrgDataCollectionType.None:
-                        Debug.Log("Server received packet with type \"None\": " + packet);
-                        break;
-                    case VrrgDataCollectionType.Command:
-                        HandlePackets.Commands( packet );
-                        break;
+                    switch (packet.Type) {
+                        default:
+                            Debug.Log("Type \"" + packet.Type + "\" was not recognized by the server.");
+                            break;
+                        case VrrgDataCollectionType.None:
+                            Debug.Log("Server received packet with type \"None\": " + packet);
+                            break;
+                        case VrrgDataCollectionType.Command:
+                            HandlePackets.Commands(packet);
+                            break;
 
-                    case VrrgDataCollectionType.Message:
-                        HandlePackets.Messages( packet );
-                        break;
+                        case VrrgDataCollectionType.Message:
+                            HandlePackets.Messages(packet);
+                            break;
 
-                    case VrrgDataCollectionType.ChatMessage:
-                        HandlePackets.ChatMessages( packet );
-                        break;
+                        case VrrgDataCollectionType.ChatMessage:
+                            HandlePackets.ChatMessages(packet);
+                            break;
 
-                    case VrrgDataCollectionType.MapData:
-                        HandlePackets.MapDatas( packet );
-                        break;
+                        case VrrgDataCollectionType.MapData:
+                            HandlePackets.MapDatas(packet);
+                            break;
 
-                    case VrrgDataCollectionType.PlayerUpdate:
-                        HandlePackets.PlayerUpdates( packet );
-                        break;
+                        case VrrgDataCollectionType.PlayerUpdate:
+                            HandlePackets.PlayerUpdates(packet);
+                            break;
                     }
                 }
-            }
-            catch( Exception ex )
-            {
-                if( !ex.ToString().Contains( "forcibly closed" ) &&
-                    !ex.ToString().Contains( "Thread was being aborted" ) )
+            } catch (Exception ex) {
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("Thread was being aborted"))
                     Debug.Log("\n" + ex + "\n");
-                if( !isClosing )
-                    CloseConnection( "Disconnected from server." );
+                if (!isClosing)
+                    CloseConnection("Disconnected from server.");
             }
         }
 
-        public static string ReceiveMessage( bool logMessage = true )
-        {
-            try
-            {
+        public static void SendPlayerUpdates() {
+            string pos = Data.Network.Players[Data.Player.UserName].transform.position.ToString().Trim(' ', '(', ')');
+            string rot = Data.Network.Players[Data.Player.UserName].transform.rotation.ToString().Trim(' ', '(', ')');
+
+            SendMessage(
+                new Packet(
+                    Data.Player.UserName,
+                    "Server",
+                    VrrgDataCollectionType.PlayerUpdate,
+                    new [] {
+                        "playerName", Data.Player.UserName,
+                        "position", pos,
+                        "rotation", rot
+                    }
+                )
+            );
+        }
+
+        public static string ReceiveMessage(bool logMessage = true) {
+            try {
                 NetworkStream getStream = Data.Player.Socket.GetStream();
-                byte[] buffer = new byte[ 1024 ];
+                byte[] buffer = new byte[1024];
 
-                int readCount = getStream.Read( buffer, 0, buffer.Length );
-                List< byte > actualRead = new List< byte >( buffer ).GetRange( 0, readCount );
+                int readCount = getStream.Read(buffer, 0, buffer.Length);
+                List<byte> actualRead = new List<byte>(buffer).GetRange(0, readCount);
 
-                string message = Encoding.ASCII.GetString( actualRead.ToArray() );
-                if( logMessage ){
-                    Debug.Log( message );
+                string message = Encoding.ASCII.GetString(actualRead.ToArray());
+                if (logMessage) {
+                    Debug.Log(message);
                 }
-                    
+
                 return message;
+            } catch (Exception ex) {
+                if (!ex.ToString().Contains("forcibly closed") &&
+                    !ex.ToString().Contains("Thread was being aborted")) {
+                    Debug.Log("\n" + ex + "\n");
+                }
+                if (!isClosing)
+                    CloseConnection("Disconnected from server.");
             }
-            catch( Exception ex ) 
-            {
-                if( !ex.ToString().Contains( "forcibly closed" ) && 
-                    !ex.ToString().Contains("Thread was being aborted") ) 
-                    { Debug.Log( "\n" + ex + "\n" ); }
-                if( !isClosing )
-                    CloseConnection( "Disconnected from server." );
-            }
-            return null;   
+            return null;
         }
 
         public static bool HandlePassword() {
-            Packet p = new Packet( ReceiveMessage() );
+            Packet p = new Packet(ReceiveMessage());
 
             if (p == new Packet() || p.Type != VrrgDataCollectionType.Command ||
                 p.Variables["usernameAvailable"] == "false") return Connected;
-            if( p.Variables[ "passwordRequired" ] == "true" ) {
+            if (p.Variables["passwordRequired"] == "true") {
                 while (true) {
                     // Make a password prompt message box.
                     string pass = Console.ReadLine(); // Get password from prompt box
 
                     SendMessage(
                         new Packet(
-                            "test",//Username,
+                            "test", //Username,
                             "Server",
                             VrrgDataCollectionType.Command,
-                            new[] { "password", pass }
-                        )
-                    );
+                            new[] {"password", pass}
+                            )
+                        );
 
                     Packet password = new Packet(ReceiveMessage());
 
@@ -191,8 +197,8 @@ public class Client : MonoBehaviour
                 //Console.WriteLine("Connected to \"" + p.Variables["serverName"] + "\"!");
                 Connected = true;
             } //else
-                // Show a debug message
-                //Console.WriteLine("Password key not found in packet");
+            // Show a debug message
+            //Console.WriteLine("Password key not found in packet");
 
             return Connected;
         }
