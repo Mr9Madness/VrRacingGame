@@ -26,6 +26,8 @@ namespace Game
 
             EmptyLevel();
 
+            if( _tileData == null ) return;
+
             for( int x = 0; x < _tileData.LevelWidth; x++ )
             {
                 for ( int y = 0; y < _tileData.LevelHeight; y++ )

@@ -14,11 +14,12 @@ namespace LevelEditor
 
         public GameObject PlaceArea;
 
-        public string LevelName;
+        [NonSerialized] public string LevelName;
 
         void Start()
         {
             _tileData = new Data.Level();
+
 
             LevelName = _tileData.LevelName;
 

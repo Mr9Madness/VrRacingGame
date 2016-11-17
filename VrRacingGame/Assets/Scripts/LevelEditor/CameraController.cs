@@ -23,7 +23,7 @@ namespace LevelEditor
 		void Update()
         {        
             if( Input.GetKeyDown( KeyCode.Escape ) ) 
-                PauseMenu.SetActive( PauseMenu.activeSelf ? false : true );
+                PauseMenu.SetActive( !PauseMenu.activeSelf );
 
             if( PauseMenu.activeSelf )
             {
@@ -47,6 +47,13 @@ namespace LevelEditor
 			if( Input.GetMouseButton( 1 ) )
 				Rotate();
 
+            if( Input.GetAxis( "Scroll" ) != 0f )
+            {
+
+                ObjectSpawn.ChangeSelection(
+                    Mathf.RoundToInt( Mathf.Clamp( Input.GetAxis( "Scroll" ), -1, 1 ) ) );
+            }
+
             if( Input.GetMouseButton( 0 ) )
             {
                 Ray mouseRay = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -54,14 +61,7 @@ namespace LevelEditor
 
                 if( Physics.Raycast( mouseRay, out mouseRayHit, Mathf.Infinity ) )
                 {
-                    if( mouseRayHit.collider.tag != "PlaceArea" )
-                        return;
-                    
-                    Vector3 mousePos = new Vector3( Mathf.FloorToInt( mouseRayHit.point.x / 32 ), 1 / 32, Mathf.FloorToInt( mouseRayHit.point.z / 32 ) );
-
-                    ObjectSpawn.SpawnObject( mousePos, 0 );
-
-                    LevelEditor.TileMap._tileData.SetTile( Mathf.FloorToInt( mouseRayHit.point.x / 32 ),  Mathf.FloorToInt( mouseRayHit.point.z / 32 ), 0 );
+                    ObjectSpawn.SpawnObject( mouseRayHit );
                 }
             }
 		}

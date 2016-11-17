@@ -77,6 +77,7 @@
      <Compile Include="Assets\Scripts\CarController.cs" />
      <Compile Include="Assets\Scripts\Data\Client.cs" />
      <Compile Include="Assets\Scripts\Data\Level.cs" />
+     <Compile Include="Assets\Scripts\Data\Network.cs" />
      <Compile Include="Assets\Scripts\Data\Player.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\CameraController.cs" />
      <Compile Include="Assets\Scripts\LevelEditor\LevelEditorUIController.cs" />

@@ -6,7 +6,7 @@ namespace Data
     public static class Player
     {
         public static TcpClient Socket = new TcpClient();
-        public static string UserName = "";
+        public static string UserName = "Player1";
 
 
     }

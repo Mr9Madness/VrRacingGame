@@ -53,12 +53,11 @@ namespace Data
             TextAsset loaded = Resources.Load( levelName ) as TextAsset;
             if( loaded != null )
             {
-                Debug.Log( loaded );
                 return JsonUtility.FromJson< Level >( loaded.text );
             }
             string loadedString = File.ReadAllText( Application.dataPath + @"\Data\level\" + levelName + ".json" );
 
-            if( loadedString != null )
+            if( loadedString != "" )
             {                          
                 Debug.Log( loadedString );
 

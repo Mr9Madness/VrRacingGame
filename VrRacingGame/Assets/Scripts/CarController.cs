@@ -15,6 +15,7 @@ namespace Game
         /// Index to position = 0 Right Front, 1 Left Front, 2 Right Back, 3 Left Back
         /// </summary>
         [ SerializeField ] private MeshRenderer[] _wheelMeshes = new MeshRenderer[ 4 ];
+        [ SerializeField ] private GameObject _steeringWheel;
 
         /// <summary>
         /// Index to position = 0 Right Front, 1 Left Front, 2 Right Back, 3 Left Back
@@ -93,6 +94,7 @@ namespace Game
             _steeringAngle = steeringValue * _maximumSteerAngle;
             _wheelColliders[ 0 ].steerAngle = _steeringAngle;
             _wheelColliders[ 1 ].steerAngle = _steeringAngle;
+            //_steeringWheel.transform.localRotation = Quaternion.Euler( _steeringWheel.transform.eulerAngles.x, _steeringWheel.transform.eulerAngles.y, _steeringAngle );
 
             SteerHelper();
             ApplyDrive( _accelValue, _brakeValue );

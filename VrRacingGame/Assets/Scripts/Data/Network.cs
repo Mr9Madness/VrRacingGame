@@ -7,6 +7,6 @@ namespace Data
 {
     class Network
     {
-        public static Dictionary< string, Game.CarController > Players;
+        public static Dictionary< string, UnityEngine.GameObject > Players = new Dictionary< string, UnityEngine.GameObject >();
     }
 }
