@@ -55,13 +55,15 @@ namespace ServerConnection {
         }
 
         private static UnityEngine.Vector3 CreateVector3FromString(string str) {
-            float[] pos = str.Split(',').Select(Convert.ToDouble).Cast<float>().ToArray();
+            double[] temp = str.Split(',').Select(Convert.ToDouble).ToArray();
+            float[] pos = { (float)temp[0], (float)temp[1], (float)temp[2] };
 
             return new UnityEngine.Vector3(pos[0], pos[1], pos[2]);
         }
 
         private static UnityEngine.Quaternion CreateQuaternionFromString(string str) {
-            float[] pos = str.Split(',').Select(Convert.ToDouble).Cast<float>().ToArray();
+            double[] temp = str.Split(',').Select(Convert.ToDouble).ToArray();
+            float[] pos = { (float)temp[0], (float)temp[1], (float)temp[2], (float)temp[3] };
 
             return new UnityEngine.Quaternion(pos[0], pos[1], pos[2], pos[3]);
         }
