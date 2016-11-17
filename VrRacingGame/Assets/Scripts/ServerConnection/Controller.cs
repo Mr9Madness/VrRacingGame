@@ -7,10 +7,12 @@ using VrRacingGameDataCollection;
 
 namespace ServerConnection
 {
-    public class Controller : MonoBehaviour
-    {
+    public class Controller : MonoBehaviour {
+
         private Thread _listenThread = null;
-    	void Start () 
+        private Thread _sendPlayerUpdatesThread = null;
+
+        void Start () 
         {
             string[] address = PlayerPrefs.GetString( "IP", ":" ).Split( ':' );
 
@@ -37,7 +39,11 @@ namespace ServerConnection
             if( !Client.HandlePassword() )
                 return;
 
-            _listenThread = new Thread( Client.Listen );
+            _listenThread = new Thread(Client.Listen);
+            _sendPlayerUpdatesThread = new Thread(Client.SendPlayerUpdates);
+
+            _listenThread.Start();
+            _sendPlayerUpdatesThread.Start();
         }
     }
 }
