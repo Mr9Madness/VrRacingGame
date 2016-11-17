@@ -44,7 +44,7 @@ namespace ServerConnection {
                 return;
             }
 
-            Game.CarController player = Data.Network.Players[p.Variables["playerName"]];
+            UnityEngine.GameObject player = Data.Network.Players[p.Variables["playerName"]];
             UnityEngine.Vector3 position = CreateVector3FromString(p.Variables["position"]);
             UnityEngine.Quaternion rotation = CreateQuaternionFromString(p.Variables["rotation"]);
 

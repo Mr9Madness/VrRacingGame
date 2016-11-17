@@ -19,7 +19,7 @@ namespace ServerConnection {
             ClientList = new List<string>();
             MaxPlayers = 0;
 
-            Data.Network.Players = new Dictionary<string, Game.CarController>();
+            Data.Network.Players = new Dictionary<string, GameObject>();
         }
     }
 
