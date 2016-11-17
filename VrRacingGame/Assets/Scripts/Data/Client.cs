@@ -114,21 +114,31 @@ namespace ServerConnection {
         }
 
         public static void SendPlayerUpdates() {
-            string pos = Data.Network.Players[Data.Player.UserName].transform.position.ToString().Trim(' ', '(', ')');
-            string rot = Data.Network.Players[Data.Player.UserName].transform.rotation.ToString().Trim(' ', '(', ')');
+            try {
+                while (Data.Player.Socket.Connected) {
+                    string pos = Data.Network.Players[Data.Player.UserName].transform.position.ToString().
+                        Trim(' ', '(', ')');
+                    string rot = Data.Network.Players[Data.Player.UserName].transform.rotation.ToString().
+                        Trim(' ', '(', ')');
 
-            SendMessage(
-                new Packet(
-                    Data.Player.UserName,
-                    "Server",
-                    VrrgDataCollectionType.PlayerUpdate,
-                    new [] {
-                        "playerName", Data.Player.UserName,
-                        "position", pos,
-                        "rotation", rot
-                    }
-                )
-            );
+                    SendMessage(
+                        new Packet(
+                            Data.Player.UserName,
+                            "Server",
+                            VrrgDataCollectionType.PlayerUpdate,
+                            new[] {
+                                "playerName", Data.Player.UserName,
+                                "position", pos,
+                                "rotation", rot
+                            }
+                            )
+                        );
+                }
+            } catch (Exception ex) {
+                Debug.Log(ex);
+
+                CloseConnection();
+            }
         }
 
         public static string ReceiveMessage(bool logMessage = true) {
