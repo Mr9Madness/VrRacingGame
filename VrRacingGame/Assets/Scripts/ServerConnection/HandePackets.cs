@@ -51,7 +51,7 @@ namespace ServerConnection {
             player.transform.position = position;
             player.transform.rotation = rotation;
 
-            Data.Network.Players[p.Variables["playerName"]] = player;
+            Game.PlayerController.AddPlayer(p.Variables["playerName"]);
         }
 
         private static UnityEngine.Vector3 CreateVector3FromString(string str) {
