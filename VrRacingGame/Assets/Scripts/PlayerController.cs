@@ -24,7 +24,7 @@ namespace Game
         {
             GameObject otherplayer =
                 Instantiate( Resources.Load( "Car Audi R8 nonPlayer" ),
-                        new Vector3( 15 * ( Data.Network.Players.Count % 2 ), 1, 15 * ( Data.Network.Players.Count % 3 ) ),
+                        new Vector3( 5, 1, 15 * Data.Network.Players.Count ),
                         Quaternion.identity )
                     as
                     GameObject;

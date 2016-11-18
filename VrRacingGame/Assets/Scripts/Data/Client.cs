@@ -131,8 +131,8 @@ namespace ServerConnection {
                                 "position", pos,
                                 "rotation", rot
                             }
-                            )
-                        );
+                        )
+                    );
                 }
             } catch (Exception ex) {
                 Debug.Log(ex);
